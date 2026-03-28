@@ -5,7 +5,6 @@ import re
 import uuid
 
 import fitz  # PyMuPDF
-from sentence_transformers import SentenceTransformer
 
 from config import EMBEDDING_MODEL
 from database import supabase_admin
@@ -19,13 +18,14 @@ MIN_CHUNK_CHARS = 200
 MAX_CHUNK_CHARS = 4000
 
 # Local multilingual model — supports Arabic, 1024d output, no API key needed
-_model: SentenceTransformer | None = None
+_model = None
 
 
-def _get_model() -> SentenceTransformer:
+def _get_model():
     """Lazy-load the embedding model on first use."""
     global _model
     if _model is None:
+        from sentence_transformers import SentenceTransformer
         logger.info("Loading embedding model: %s", EMBEDDING_MODEL)
         _model = SentenceTransformer(EMBEDDING_MODEL)
     return _model
