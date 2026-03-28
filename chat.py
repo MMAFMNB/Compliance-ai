@@ -43,7 +43,15 @@ def _is_rag_available() -> bool:
 
 
 def _get_rag_system_prompt(user_message: str) -> str:
-    """Build system prompt with RAG context if available."""
+    """Build system prompt with RAG context if available.
+
+    NOTE: RAG requires the sentence-transformers model (~2.5GB RAM).
+    On memory-constrained deployments, set RAG_ENABLED=false to skip.
+    """
+    import os
+    if os.getenv("RAG_ENABLED", "true").lower() == "false":
+        return SYSTEM_PROMPT
+
     if not _is_rag_available():
         return SYSTEM_PROMPT
 
