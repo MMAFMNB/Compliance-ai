@@ -193,17 +193,17 @@ def review_document(
         non_compliant_count = sum(1 for f in findings if f.status == "non_compliant")
         needs_review_count = sum(1 for f in findings if f.status == "needs_review")
 
-        supabase_admin.table("document_reviews").insert({
-            "user_id": user["id"],
-            "filename": file.filename,
-            "language": language,
-            "total_findings": len(findings),
-            "compliant": compliant_count,
-            "non_compliant": non_compliant_count,
-            "needs_review": needs_review_count,
-            "findings": findings_data,
-            "latency_ms": latency_ms,
-        }).execute()
+        try:
+            supabase_admin.table("document_reviews").insert({
+                "user_id": user["id"],
+                "filename": file.filename,
+                "language": language,
+                "total_findings": len(findings),
+                "findings": findings_data,
+                "latency_ms": latency_ms,
+            }).execute()
+        except Exception as db_err:
+            logger.warning("Failed to save review to DB (non-fatal): %s", db_err)
 
         return ReviewResponse(
             filename=file.filename,
