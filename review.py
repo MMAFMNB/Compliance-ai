@@ -163,9 +163,16 @@ def review_document(
 
         raw_text = text_blocks[0].text.strip()
 
+        # Strip markdown code fences if present
         if raw_text.startswith("```"):
             raw_text = raw_text.split("\n", 1)[1]
-            raw_text = raw_text.rsplit("```", 1)[0]
+            raw_text = raw_text.rsplit("```", 1)[0].strip()
+
+        # Try to extract JSON array even if LLM added surrounding text
+        import re
+        json_match = re.search(r'\[.*\]', raw_text, re.DOTALL)
+        if json_match:
+            raw_text = json_match.group(0)
 
         try:
             findings_data = json.loads(raw_text)
@@ -175,6 +182,10 @@ def review_document(
                 status_code=502,
                 detail="LLM response was not valid JSON. Try again.",
             )
+
+        # Ensure it's a list
+        if not isinstance(findings_data, list):
+            findings_data = [findings_data]
 
         findings = [ReviewFinding(**f) for f in findings_data]
 
