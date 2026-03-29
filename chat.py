@@ -77,24 +77,15 @@ def _get_conversation_messages(conversation_id: str) -> list[dict]:
     return messages[-MAX_CONTEXT_MESSAGES:]
 
 
-def _save_message(
-    conversation_id: str,
-    role: str,
-    content: str,
-    model: str | None = None,
-    latency_ms: int | None = None,
-) -> None:
+def _save_message(conversation_id: str, role: str, content: str) -> None:
     """Persist a message to the database."""
-    row = {
-        "conversation_id": conversation_id,
-        "role": role,
-        "content": content,
-    }
-    if model is not None:
-        row["model"] = model
-    if latency_ms is not None:
-        row["latency_ms"] = latency_ms
-    supabase_admin.table("messages").insert(row).execute()
+    supabase_admin.table("messages").insert(
+        {
+            "conversation_id": conversation_id,
+            "role": role,
+            "content": content,
+        }
+    ).execute()
 
 
 def _ensure_conversation(conversation_id: str | None, user_id: str) -> str:
@@ -146,7 +137,7 @@ def chat(request: ChatRequest, user: dict = Depends(get_current_user)):
         raise HTTPException(status_code=502, detail="LLM returned no text content")
     assistant_text = text_blocks[0].text
 
-    _save_message(conv_id, "assistant", assistant_text, model=MODEL, latency_ms=latency_ms)
+    _save_message(conv_id, "assistant", assistant_text)
 
     return ChatResponse(response=assistant_text, conversation_id=conv_id)
 
@@ -180,7 +171,7 @@ def chat_stream(request: ChatRequest, user: dict = Depends(get_current_user)):
 
             latency_ms = int((time.perf_counter() - start) * 1000)
             try:
-                _save_message(conv_id, "assistant", full_response, model=MODEL, latency_ms=latency_ms)
+                _save_message(conv_id, "assistant", full_response)
             except Exception:
                 logger.exception("Failed to persist assistant message for conversation %s", conv_id)
 

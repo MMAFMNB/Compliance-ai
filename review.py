@@ -68,13 +68,13 @@ Return your analysis as a JSON array of objects with these fields:
 
 Return ONLY the JSON array, no other text. Example:
 [
-  {
+  {{
     "clause": "Fund management fees shall be 2% per annum",
     "regulation": "Investment Funds Regulations",
     "status": "needs_review",
     "recommendation": "Verify fee disclosure meets Article 32 requirements for fund terms and conditions",
     "citations": ["Investment Funds Regulations, Article (32), Paragraph (a)"]
-  }
+  }}
 ]"""
 
 

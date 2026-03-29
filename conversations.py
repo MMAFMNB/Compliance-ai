@@ -53,7 +53,7 @@ def get_conversation(
 
     msgs = (
         supabase_admin.table("messages")
-        .select("id, role, content, citations, model, latency_ms, created_at")
+        .select("id, role, content, created_at")
         .eq("conversation_id", conversation_id)
         .order("created_at", desc=False)
         .execute()

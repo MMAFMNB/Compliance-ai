@@ -68,9 +68,6 @@ class MessageOut(BaseModel):
     id: str
     role: str
     content: str
-    citations: Optional[dict] = None
-    model: Optional[str] = None
-    latency_ms: Optional[int] = None
     created_at: str
 
 
