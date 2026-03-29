@@ -169,7 +169,7 @@ def get_audit_trail(
         .execute()
     )
     for rev in reviews.data:
-        summary = f"{rev['filename']} — {rev['total_findings']} findings, {rev['non_compliant']} non-compliant"
+        summary = f"{rev['filename']} \u2014 {rev['total_findings']} findings, {rev['non_compliant']} non-compliant"
         entries.append(
             AuditEntry(
                 id=rev["id"],

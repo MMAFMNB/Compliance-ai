@@ -1,0 +1,108 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --tam-primary: #0A2647;
+  --tam-secondary: #144272;
+  --tam-accent: #205295;
+  --tam-light: #2C74B3;
+  --tam-gold: #C4A55A;
+}
+
+body {
+  font-family: 'IBM Plex Sans Arabic', sans-serif;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 3px;
+}
+
+/* RTL support for Arabic content */
+[dir="rtl"] {
+  text-align: right;
+}
+
+/* Citation styling */
+.citation {
+  display: inline;
+  background-color: #eff6ff;
+  color: #1e40af;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 0.85em;
+  direction: ltr;
+  unicode-bidi: embed;
+}
+
+/* Streaming cursor animation */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.streaming-cursor::after {
+  content: '█';
+  animation: blink 0.8s infinite;
+  color: var(--tam-light);
+}
+
+/* Message markdown styling */
+.message-content h1,
+.message-content h2,
+.message-content h3 {
+  font-weight: 600;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+}
+
+.message-content h1 { font-size: 1.25em; }
+.message-content h2 { font-size: 1.15em; }
+.message-content h3 { font-size: 1.05em; }
+
+.message-content p {
+  margin-bottom: 0.75em;
+  line-height: 1.7;
+}
+
+.message-content ul, .message-content ol {
+  margin-bottom: 0.75em;
+  padding-inline-start: 1.5em;
+}
+
+.message-content li {
+  margin-bottom: 0.25em;
+}
+
+.message-content strong {
+  font-weight: 600;
+}
+
+.message-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+  font-size: 0.9em;
+}
+
+.message-content th,
+.message-content td {
+  border: 1px solid #e2e8f0;
+  padding: 8px 12px;
+  text-align: inherit;
+}
+
+.message-content th {
+  background-color: #f8fafc;
+  font-weight: 600;
+}

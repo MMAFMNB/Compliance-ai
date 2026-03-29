@@ -31,7 +31,7 @@ def _get_model():
     return _model
 
 
-# ─── PDF Text Extraction ────────────────────────────────────
+# ─── PDF Text Extraction ─────────────────────────────────────
 
 def extract_text_from_pdf(file_path: str) -> str:
     """Extract full text from a PDF using PyMuPDF."""
@@ -43,7 +43,7 @@ def extract_text_from_pdf(file_path: str) -> str:
     return "\n".join(pages)
 
 
-# ─── Language Detection ─────────────────────────────────────
+# ─── Language Detection ──────────────────────────────────────
 
 def detect_language(text: str) -> str:
     """Detect if text is predominantly Arabic, English, or bilingual."""
@@ -97,8 +97,8 @@ def _extract_article_number(header: str) -> str:
     # Try Arabic numerals first
     m = re.search(r"[\u0660-\u0669]+", header)
     if m:
-        arabic_digits = {"٠": "0", "١": "1", "٢": "2", "٣": "3", "٤": "4",
-                         "٥": "5", "٦": "6", "٧": "7", "٨": "8", "٩": "9"}
+        arabic_digits = {"\u0660": "0", "\u0661": "1", "\u0662": "2", "\u0663": "3", "\u0664": "4",
+                         "\u0665": "5", "\u0666": "6", "\u0667": "7", "\u0668": "8", "\u0669": "9"}
         return "".join(arabic_digits.get(c, c) for c in m.group())
     # Try Western numerals
     m = re.search(r"\d+", header)

@@ -154,15 +154,15 @@ def scrape_cma_circulars() -> list[dict]:
 def _classify_doc_type(title: str) -> str:
     """Classify a publication by its title."""
     title_lower = title.lower()
-    if "circular" in title_lower or "تعميم" in title:
+    if "circular" in title_lower or "\u062a\u0639\u0645\u064a\u0645" in title:
         return "circular"
-    if "amend" in title_lower or "تعديل" in title:
+    if "amend" in title_lower or "\u062a\u0639\u062f\u064a\u0644" in title:
         return "amendment"
-    if "regulation" in title_lower or "لائحة" in title:
+    if "regulation" in title_lower or "\u0644\u0627\u0626\u062d\u0629" in title:
         return "regulation"
-    if "guidance" in title_lower or "دليل" in title:
+    if "guidance" in title_lower or "\u062f\u0644\u064a\u0644" in title:
         return "guidance"
-    if "faq" in title_lower or "أسئلة" in title:
+    if "faq" in title_lower or "\u0623\u0633\u0626\u0644\u0629" in title:
         return "faq"
     return "other"
 
