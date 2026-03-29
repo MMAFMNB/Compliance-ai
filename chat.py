@@ -21,7 +21,6 @@ SYSTEM_PROMPT = load_system_prompt()
 
 MAX_CONTEXT_MESSAGES = 20
 
-# RAG is available only when OpenAI embeddings are configured and chunks exist
 _rag_available: bool | None = None
 
 
@@ -43,11 +42,7 @@ def _is_rag_available() -> bool:
 
 
 def _get_rag_system_prompt(user_message: str) -> str:
-    """Build system prompt with RAG context if available.
-
-    NOTE: RAG requires the sentence-transformers model (~2.5GB RAM).
-    On memory-constrained deployments, set RAG_ENABLED=false to skip.
-    """
+    """Build system prompt with RAG context if available."""
     import os
     if os.getenv("RAG_ENABLED", "false").lower() != "true":
         return SYSTEM_PROMPT
@@ -165,7 +160,7 @@ def chat_stream(request: ChatRequest, user: dict = Depends(get_current_user)):
 
     system_prompt = _get_rag_system_prompt(request.message)
 
-    async def generate():
+    def generate():
         full_response = ""
         start = time.perf_counter()
 
@@ -192,6 +187,9 @@ def chat_stream(request: ChatRequest, user: dict = Depends(get_current_user)):
 
         except anthropic.APIError as e:
             yield f"data: {json.dumps({'type': 'error', 'error': str(e)})}\n\n"
+        except Exception as e:
+            logger.exception("Unexpected error during streaming for conversation %s", conv_id)
+            yield f"data: {json.dumps({'type': 'error', 'error': 'Internal server error'})}\n\n"
 
     return StreamingResponse(
         generate(),

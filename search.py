@@ -1,13 +1,16 @@
 """Regulation search API: full-text + vector search across all CMA documents."""
 
-from fastapi import APIRouter, Depends, Query
+import os
+
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 
 from auth import get_current_user
-from rag import rag_query
 from database import supabase_admin
 
 router = APIRouter(prefix="/api", tags=["search"])
+
+RAG_ENABLED = os.getenv("RAG_ENABLED", "false").lower() == "true"
 
 
 class SearchResult(BaseModel):
@@ -38,9 +41,17 @@ def search_regulations(
 
     Combines vector similarity search with keyword matching for article numbers.
     """
+    if not RAG_ENABLED:
+        raise HTTPException(
+            status_code=501,
+            detail="Search requires RAG to be enabled. Set RAG_ENABLED=true with sentence-transformers installed.",
+        )
+
+    # Lazy import — only loaded when RAG is enabled and endpoint is called
+    from rag import rag_query
+
     chunks = rag_query(query=q, doc_type=doc_type)
 
-    # Fetch document titles for the results
     doc_ids = list({c["document_id"] for c in chunks if c.get("document_id")})
     doc_titles = {}
     if doc_ids:

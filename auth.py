@@ -35,7 +35,7 @@ def decode_jwt(token: str) -> dict:
     # Inspect token header to determine algorithm
     try:
         header = jwt.get_unverified_header(token)
-        logger.info("JWT header: alg=%s, kid=%s", header.get("alg"), header.get("kid"))
+        logger.debug("JWT header: alg=%s, kid=%s", header.get("alg"), header.get("kid"))
     except Exception:
         logger.exception("Failed to decode JWT header")
 
@@ -49,7 +49,7 @@ def decode_jwt(token: str) -> dict:
             algorithms=["ES256"],
             audience=AUDIENCE,
         )
-        logger.info("JWT validated via JWKS (ES256) for user %s", payload.get("sub"))
+        logger.debug("JWT validated via JWKS (ES256) for user %s", payload.get("sub"))
         return payload
     except Exception as jwks_err:
         logger.warning("JWKS verification failed: %s", jwks_err)
