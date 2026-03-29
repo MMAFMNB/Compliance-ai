@@ -49,7 +49,7 @@ def _get_rag_system_prompt(user_message: str) -> str:
     On memory-constrained deployments, set RAG_ENABLED=false to skip.
     """
     import os
-    if os.getenv("RAG_ENABLED", "true").lower() == "false":
+    if os.getenv("RAG_ENABLED", "false").lower() != "true":
         return SYSTEM_PROMPT
 
     if not _is_rag_available():
