@@ -85,15 +85,16 @@ def _save_message(
     latency_ms: int | None = None,
 ) -> None:
     """Persist a message to the database."""
-    supabase_admin.table("messages").insert(
-        {
-            "conversation_id": conversation_id,
-            "role": role,
-            "content": content,
-            "model": model,
-            "latency_ms": latency_ms,
-        }
-    ).execute()
+    row = {
+        "conversation_id": conversation_id,
+        "role": role,
+        "content": content,
+    }
+    if model is not None:
+        row["model"] = model
+    if latency_ms is not None:
+        row["latency_ms"] = latency_ms
+    supabase_admin.table("messages").insert(row).execute()
 
 
 def _ensure_conversation(conversation_id: str | None, user_id: str) -> str:
