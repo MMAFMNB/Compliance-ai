@@ -1,7 +1,7 @@
 import logging
 import traceback
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
@@ -22,19 +22,34 @@ app = FastAPI(
     version="3.0.0",
 )
 
+ALLOWED_ORIGINS = [
+    FRONTEND_URL,
+    "https://tam-compliance-ai-frontend.vercel.app",
+    "http://localhost:3000",
+    "http://localhost:5173",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        FRONTEND_URL,
-        "http://localhost:3000",
-        "http://localhost:5173",
-        "https://*.vercel.app",
-    ],
+    allow_origins=ALLOWED_ORIGINS,
     allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+def _cors_headers(request: Request) -> dict:
+    """Return CORS headers matching the request origin."""
+    origin = request.headers.get("origin", "")
+    import re
+    if origin in ALLOWED_ORIGINS or re.match(r"https://.*\.vercel\.app$", origin):
+        return {
+            "access-control-allow-origin": origin,
+            "access-control-allow-credentials": "true",
+        }
+    return {}
+
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
@@ -44,6 +59,17 @@ async def global_exception_handler(request: Request, exc: Exception):
     return JSONResponse(
         status_code=500,
         content={"detail": f"Internal server error: {exc}"},
+        headers=_cors_headers(request),
+    )
+
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    """Ensure HTTPException responses also include CORS headers."""
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail},
+        headers=_cors_headers(request),
     )
 
 
