@@ -117,49 +117,16 @@ export default function DashboardPage() {
 
         {!isLoading && stats && (
           <>
-            {/* Stats Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
-              <StatCard
-                icon={<MessageSquare size={16} />}
-                label="المحادثات"
-                value={stats.total_conversations}
-                color="text-tam-light"
-              />
-              <StatCard
-                icon={<MessageSquare size={16} />}
-                label="الرسائل"
-                value={stats.total_messages}
-                color="text-tam-accent"
-              />
-              <StatCard
-                icon={<Database size={16} />}
-                label="المستندات"
-                value={stats.total_documents}
-                color="text-emerald-600"
-              />
-              <StatCard
-                icon={<FileSearch size={16} />}
-                label="المراجعات"
-                value={stats.total_reviews}
-                color="text-amber-600"
-              />
-              <StatCard
-                icon={<Bell size={16} />}
-                label="التنبيهات"
-                value={stats.total_alerts}
-                sublabel={stats.unread_alerts > 0 ? `${stats.unread_alerts} جديدة` : undefined}
-                color="text-red-500"
-              />
-              <StatCard
-                icon={<FileText size={16} />}
-                label="الأجزاء المفهرسة"
-                value={stats.total_chunks}
-                color="text-slate-500"
-              />
+              <StatCard icon={<MessageSquare size={16} />} label="المحادثات" value={stats.total_conversations} color="text-tam-light" />
+              <StatCard icon={<MessageSquare size={16} />} label="الرسائل" value={stats.total_messages} color="text-tam-accent" />
+              <StatCard icon={<Database size={16} />} label="المستندات" value={stats.total_documents} color="text-emerald-600" />
+              <StatCard icon={<FileSearch size={16} />} label="المراجعات" value={stats.total_reviews} color="text-amber-600" />
+              <StatCard icon={<Bell size={16} />} label="التنبيهات" value={stats.total_alerts} sublabel={stats.unread_alerts > 0 ? `${stats.unread_alerts} جديدة` : undefined} color="text-red-500" />
+              <StatCard icon={<FileText size={16} />} label="الأجزاء المفهرسة" value={stats.total_chunks} color="text-slate-500" />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Recent Topics */}
               <div className="bg-white border border-slate-200 rounded-xl p-5">
                 <h2 className="text-sm font-semibold text-tam-primary mb-4 flex items-center gap-2">
                   <MessageSquare size={14} />
@@ -170,11 +137,7 @@ export default function DashboardPage() {
                 ) : (
                   <div className="space-y-2">
                     {stats.recent_topics.map((topic, i) => (
-                      <div
-                        key={i}
-                        dir="auto"
-                        className="text-xs text-slate-600 bg-slate-50 rounded-lg px-3 py-2 leading-6 truncate"
-                      >
+                      <div key={i} dir="auto" className="text-xs text-slate-600 bg-slate-50 rounded-lg px-3 py-2 leading-6 truncate">
                         {topic}
                       </div>
                     ))}
@@ -182,7 +145,6 @@ export default function DashboardPage() {
                 )}
               </div>
 
-              {/* Audit Trail */}
               <div className="bg-white border border-slate-200 rounded-xl p-5">
                 <h2 className="text-sm font-semibold text-tam-primary mb-4 flex items-center gap-2">
                   <Clock size={14} />
@@ -193,32 +155,14 @@ export default function DashboardPage() {
                 ) : (
                   <div className="space-y-2">
                     {audit.map((entry) => (
-                      <div
-                        key={entry.id}
-                        className="flex items-start gap-2 text-xs"
-                      >
-                        <div
-                          className={`mt-1 w-5 h-5 rounded flex items-center justify-center flex-shrink-0 ${
-                            entry.type === "chat"
-                              ? "bg-tam-light/10 text-tam-light"
-                              : "bg-amber-50 text-amber-600"
-                          }`}
-                        >
-                          {entry.type === "chat" ? (
-                            <MessageSquare size={10} />
-                          ) : (
-                            <FileSearch size={10} />
-                          )}
+                      <div key={entry.id} className="flex items-start gap-2 text-xs">
+                        <div className={`mt-1 w-5 h-5 rounded flex items-center justify-center flex-shrink-0 ${entry.type === "chat" ? "bg-tam-light/10 text-tam-light" : "bg-amber-50 text-amber-600"}`}>
+                          {entry.type === "chat" ? <MessageSquare size={10} /> : <FileSearch size={10} />}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p dir="auto" className="text-slate-600 truncate leading-5">
-                            {entry.summary}
-                          </p>
+                          <p dir="auto" className="text-slate-600 truncate leading-5">{entry.summary}</p>
                           <p className="text-[10px] text-slate-400">
-                            {new Date(entry.created_at).toLocaleString("ar-SA", {
-                              dateStyle: "short",
-                              timeStyle: "short",
-                            })}
+                            {new Date(entry.created_at).toLocaleString("ar-SA", { dateStyle: "short", timeStyle: "short" })}
                           </p>
                         </div>
                       </div>
@@ -234,27 +178,13 @@ export default function DashboardPage() {
   );
 }
 
-function StatCard({
-  icon,
-  label,
-  value,
-  sublabel,
-  color,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: number;
-  sublabel?: string;
-  color: string;
-}) {
+function StatCard({ icon, label, value, sublabel, color }: { icon: React.ReactNode; label: string; value: number; sublabel?: string; color: string }) {
   return (
     <div className="bg-white border border-slate-200 rounded-xl p-4">
       <div className={`${color} mb-2`}>{icon}</div>
       <p className="text-2xl font-bold text-slate-800">{value}</p>
       <p className="text-[10px] text-slate-500">{label}</p>
-      {sublabel && (
-        <p className="text-[10px] text-red-500 mt-0.5">{sublabel}</p>
-      )}
+      {sublabel && <p className="text-[10px] text-red-500 mt-0.5">{sublabel}</p>}
     </div>
   );
 }
