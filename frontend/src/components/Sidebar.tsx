@@ -12,6 +12,11 @@ import {
   Scale,
   LogOut,
   Trash2,
+  Calendar,
+  Zap,
+  FilePlus,
+  ClipboardCheck,
+  Activity,
 } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 import {
@@ -80,7 +85,7 @@ export default function Sidebar({
       </div>
 
       {/* Navigation */}
-      <nav className="px-3 space-y-1 mb-2">
+      <nav className="px-3 space-y-1 mb-2 overflow-y-auto">
         <NavItem
           icon={<MessageSquare size={16} />}
           label="الاستشارات التنظيمية"
@@ -105,6 +110,36 @@ export default function Sidebar({
           label="التنبيهات"
           sublabel="Alerts"
           onClick={() => router.push("/alerts")}
+        />
+        <NavItem
+          icon={<Calendar size={16} />}
+          label="المواعيد النظامية"
+          sublabel="Compliance Calendar"
+          onClick={() => router.push("/calendar")}
+        />
+        <NavItem
+          icon={<Zap size={16} />}
+          label="تحليل الأثر التنظيمي"
+          sublabel="Impact Analysis"
+          onClick={() => router.push("/impact-analysis")}
+        />
+        <NavItem
+          icon={<FilePlus size={16} />}
+          label="إعداد المستندات"
+          sublabel="Document Generator"
+          onClick={() => router.push("/docgen")}
+        />
+        <NavItem
+          icon={<ClipboardCheck size={16} />}
+          label="قائمة الامتثال"
+          sublabel="Compliance Checklist"
+          onClick={() => router.push("/checklist")}
+        />
+        <NavItem
+          icon={<Activity size={16} />}
+          label="التقييم الذاتي"
+          sublabel="Self-Assessment"
+          onClick={() => router.push("/self-assessment")}
         />
         <NavItem
           icon={<LayoutDashboard size={16} />}
