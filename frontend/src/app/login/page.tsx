@@ -35,7 +35,7 @@ export default function LoginPage() {
         setIsSuccess(true);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "\u062d\u062f\u062b \u062e\u0637\u0623 \u063a\u064a\u0631 \u0645\u062a\u0648\u0642\u0639");
+      setError(err instanceof Error ? err.message : "حدث خطأ غير متوقع");
     } finally {
       setIsLoading(false);
     }
@@ -49,11 +49,11 @@ export default function LoginPage() {
             <Scale size={24} className="text-emerald-600" />
           </div>
           <h2 className="text-lg font-bold text-tam-primary mb-2">
-            \u062a\u0645 \u0625\u0646\u0634\u0627\u0621 \u0627\u0644\u062d\u0633\u0627\u0628
+            تم إنشاء الحساب
           </h2>
           <p className="text-sm text-slate-500 mb-6">
-            \u062a\u0645 \u0625\u0631\u0633\u0627\u0644 \u0631\u0627\u0628\u0637 \u0627\u0644\u062a\u0623\u0643\u064a\u062f \u0625\u0644\u0649 \u0628\u0631\u064a\u062f\u0643 \u0627\u0644\u0625\u0644\u0643\u062a\u0631\u0648\u0646\u064a. \u064a\u0631\u062c\u0649 \u062a\u0623\u0643\u064a\u062f \u062d\u0633\u0627\u0628\u0643 \u062b\u0645
-            \u062a\u0633\u062c\u064a\u0644 \u0627\u0644\u062f\u062e\u0648\u0644.
+            تم إرسال رابط التأكيد إلى بريدك الإلكتروني. يرجى تأكيد حسابك ثم
+            تسجيل الدخول.
           </p>
           <button
             onClick={() => {
@@ -62,7 +62,7 @@ export default function LoginPage() {
             }}
             className="w-full py-2.5 bg-tam-primary text-white rounded-lg text-sm font-medium hover:bg-tam-secondary transition-colors"
           >
-            \u062a\u0633\u062c\u064a\u0644 \u0627\u0644\u062f\u062e\u0648\u0644
+            تسجيل الدخول
           </button>
         </div>
       </div>
@@ -78,7 +78,7 @@ export default function LoginPage() {
             <Scale size={28} className="text-white" />
           </div>
           <h1 className="text-xl font-bold text-tam-primary">
-            \u062a\u0627\u0645 \u0644\u0644\u0627\u0645\u062a\u062b\u0627\u0644 \u0627\u0644\u062a\u0646\u0638\u064a\u0645\u064a
+            تام للامتثال التنظيمي
           </h1>
           <p className="text-xs text-slate-500 mt-1">TAM Compliance AI</p>
         </div>
@@ -95,7 +95,7 @@ export default function LoginPage() {
                   : "text-slate-500"
               }`}
             >
-              \u062a\u0633\u062c\u064a\u0644 \u0627\u0644\u062f\u062e\u0648\u0644
+              تسجيل الدخول
             </button>
             <button
               onClick={() => setMode("signup")}
@@ -105,7 +105,7 @@ export default function LoginPage() {
                   : "text-slate-500"
               }`}
             >
-              \u062d\u0633\u0627\u0628 \u062c\u062f\u064a\u062f
+              حساب جديد
             </button>
           </div>
 
@@ -123,7 +123,7 @@ export default function LoginPage() {
                     htmlFor="name"
                     className="block text-xs font-medium text-slate-600 mb-1"
                   >
-                    \u0627\u0644\u0627\u0633\u0645
+                    الاسم
                   </label>
                   <input
                     id="name"
@@ -132,7 +132,7 @@ export default function LoginPage() {
                     onChange={(e) => setName(e.target.value)}
                     required
                     className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-tam-light focus:ring-1 focus:ring-tam-light"
-                    placeholder="\u0645\u062d\u0645\u062f \u0623\u062d\u0645\u062f"
+                    placeholder="محمد أحمد"
                   />
                 </div>
                 <div>
@@ -140,7 +140,7 @@ export default function LoginPage() {
                     htmlFor="organization"
                     className="block text-xs font-medium text-slate-600 mb-1"
                   >
-                    \u0627\u0644\u0645\u0646\u0634\u0623\u0629
+                    المنشأة
                   </label>
                   <input
                     id="organization"
@@ -159,7 +159,7 @@ export default function LoginPage() {
                 htmlFor="email"
                 className="block text-xs font-medium text-slate-600 mb-1"
               >
-                \u0627\u0644\u0628\u0631\u064a\u062f \u0627\u0644\u0625\u0644\u0643\u062a\u0631\u0648\u0646\u064a
+                البريد الإلكتروني
               </label>
               <input
                 id="email"
@@ -178,7 +178,7 @@ export default function LoginPage() {
                 htmlFor="password"
                 className="block text-xs font-medium text-slate-600 mb-1"
               >
-                \u0643\u0644\u0645\u0629 \u0627\u0644\u0645\u0631\u0648\u0631
+                كلمة المرور
               </label>
               <div className="relative">
                 <input
@@ -208,13 +208,13 @@ export default function LoginPage() {
               className="w-full py-2.5 bg-tam-primary text-white rounded-lg text-sm font-medium hover:bg-tam-secondary disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
             >
               {isLoading && <Loader2 size={16} className="animate-spin" />}
-              {mode === "signin" ? "\u062a\u0633\u062c\u064a\u0644 \u0627\u0644\u062f\u062e\u0648\u0644" : "\u0625\u0646\u0634\u0627\u0621 \u0627\u0644\u062d\u0633\u0627\u0628"}
+              {mode === "signin" ? "تسجيل الدخول" : "إنشاء الحساب"}
             </button>
           </form>
         </div>
 
         <p className="text-[10px] text-slate-400 text-center mt-6">
-          &copy; 2026 \u062a\u0627\u0645 \u0627\u0644\u0645\u0627\u0644\u064a\u0629 | TAM Capital
+          &copy; 2026 تام المالية | TAM Capital
         </p>
       </div>
     </div>

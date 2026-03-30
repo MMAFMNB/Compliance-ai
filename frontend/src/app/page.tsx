@@ -58,7 +58,7 @@ export default function Home() {
           console.error("Stream error:", error);
           const errorMessage: Message = {
             role: "assistant",
-            content: `\u062d\u062f\u062b \u062e\u0637\u0623 \u0641\u064a \u0627\u0644\u0627\u062a\u0635\u0627\u0644. \u064a\u0631\u062c\u0649 \u0627\u0644\u0645\u062d\u0627\u0648\u0644\u0629 \u0645\u0631\u0629 \u0623\u062e\u0631\u0649.\n\nError: ${error}`,
+            content: `حدث خطأ في الاتصال. يرجى المحاولة مرة أخرى.\n\nError: ${error}`,
           };
           setMessages((prev) => [...prev, errorMessage]);
           setStreamingContent("");
@@ -70,7 +70,7 @@ export default function Home() {
       const detail = error instanceof Error ? error.message : "Unknown error";
       const errorMessage: Message = {
         role: "assistant",
-        content: `\u0644\u0645 \u064a\u062a\u0645 \u0627\u0644\u0627\u062a\u0635\u0627\u0644 \u0628\u0627\u0644\u062e\u0627\u062f\u0645. \u064a\u0631\u062c\u0649 \u0627\u0644\u0645\u062d\u0627\u0648\u0644\u0629 \u0645\u0631\u0629 \u0623\u062e\u0631\u0649.\n\nCould not connect to the server: ${detail}`,
+        content: `لم يتم الاتصال بالخادم. يرجى المحاولة مرة أخرى.\n\nCould not connect to the server: ${detail}`,
       };
       setMessages((prev) => [...prev, errorMessage]);
       setStreamingContent("");
@@ -120,15 +120,15 @@ export default function Home() {
         <header className="bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between">
           <div>
             <h2 className="text-sm font-semibold text-tam-primary">
-              \u0627\u0644\u0627\u0633\u062a\u0634\u0627\u0631\u0627\u062a \u0627\u0644\u062a\u0646\u0638\u064a\u0645\u064a\u0629
+              الاستشارات التنظيمية
             </h2>
             <p className="text-[11px] text-slate-400">
-              \u0645\u0633\u062a\u0634\u0627\u0631 \u0627\u0644\u0627\u0645\u062a\u062b\u0627\u0644 \u0644\u0623\u0646\u0638\u0645\u0629 \u0647\u064a\u0626\u0629 \u0627\u0644\u0633\u0648\u0642 \u0627\u0644\u0645\u0627\u0644\u064a\u0629
+              مستشار الامتثال لأنظمة هيئة السوق المالية
             </p>
           </div>
           <div className="flex items-center gap-2 text-[11px] text-slate-400">
             <div className="w-2 h-2 rounded-full bg-emerald-400" />
-            \u0645\u062a\u0635\u0644
+            متصل
           </div>
         </header>
 
@@ -167,26 +167,26 @@ function WelcomeScreen({ onSuggestion }: { onSuggestion: (q: string) => void }) 
           <Scale size={32} className="text-white" />
         </div>
         <h1 className="text-2xl font-bold text-tam-primary mb-2">
-          \u062a\u0627\u0645 \u0644\u0644\u0627\u0645\u062a\u062b\u0627\u0644 \u0627\u0644\u062a\u0646\u0638\u064a\u0645\u064a
+          تام للامتثال التنظيمي
         </h1>
         <p className="text-sm text-slate-500 mb-8">
-          \u0645\u0633\u062a\u0634\u0627\u0631\u0643 \u0627\u0644\u0630\u0643\u064a \u0644\u0623\u0646\u0638\u0645\u0629 \u0648\u0644\u0648\u0627\u0626\u062d \u0647\u064a\u0626\u0629 \u0627\u0644\u0633\u0648\u0642 \u0627\u0644\u0645\u0627\u0644\u064a\u0629 \u0627\u0644\u0633\u0639\u0648\u062f\u064a\u0629
+          مستشارك الذكي لأنظمة ولوائح هيئة السوق المالية السعودية
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-right">
           <SuggestionCard
-            title="\u0635\u0646\u0627\u062f\u064a\u0642 \u0627\u0644\u0627\u0633\u062a\u062b\u0645\u0627\u0631"
-            question="\u0645\u0627 \u0647\u064a \u0645\u062a\u0637\u0644\u0628\u0627\u062a \u062a\u0623\u0633\u064a\u0633 \u0635\u0646\u062f\u0648\u0642 \u0627\u0633\u062a\u062b\u0645\u0627\u0631 \u062e\u0627\u0635\u061f"
+            title="صناديق الاستثمار"
+            question="ما هي متطلبات تأسيس صندوق استثمار خاص؟"
             onClick={onSuggestion}
           />
           <SuggestionCard
-            title="\u0645\u0643\u0627\u0641\u062d\u0629 \u063a\u0633\u0644 \u0627\u0644\u0623\u0645\u0648\u0627\u0644"
-            question="\u0645\u0627 \u0647\u064a \u0625\u062c\u0631\u0627\u0621\u0627\u062a \u0627\u0644\u0639\u0646\u0627\u064a\u0629 \u0627\u0644\u0645\u0647\u0646\u064a\u0629 \u0627\u0644\u0648\u0627\u062c\u0628\u0629 \u0644\u0644\u0639\u0645\u0644\u0627\u0621 \u0627\u0644\u062c\u062f\u062f\u061f"
+            title="مكافحة غسل الأموال"
+            question="ما هي إجراءات العناية المهنية الواجبة للعملاء الجدد؟"
             onClick={onSuggestion}
           />
           <SuggestionCard
-            title="\u0645\u0624\u0633\u0633\u0627\u062a \u0627\u0644\u0633\u0648\u0642 \u0627\u0644\u0645\u0627\u0644\u064a\u0629"
-            question="\u0645\u0627 \u0647\u064a \u0645\u062a\u0637\u0644\u0628\u0627\u062a \u062a\u0639\u064a\u064a\u0646 \u0645\u0633\u0624\u0648\u0644 \u0627\u0644\u0645\u0637\u0627\u0628\u0642\u0629 \u0648\u0627\u0644\u0627\u0644\u062a\u0632\u0627\u0645\u061f"
+            title="مؤسسات السوق المالية"
+            question="ما هي متطلبات تعيين مسؤول المطابقة والالتزام؟"
             onClick={onSuggestion}
           />
           <SuggestionCard
@@ -197,8 +197,8 @@ function WelcomeScreen({ onSuggestion }: { onSuggestion: (q: string) => void }) 
         </div>
 
         <p className="text-[11px] text-slate-400 mt-8">
-          \u064a\u0633\u062a\u0646\u062f \u0625\u0644\u0649 \u0627\u0644\u0644\u0648\u0627\u0626\u062d \u0627\u0644\u062a\u0646\u0641\u064a\u0630\u064a\u0629 \u0648\u0627\u0644\u062a\u0639\u0627\u0645\u064a\u0645 \u0648\u0627\u0644\u0623\u0633\u0626\u0644\u0629 \u0627\u0644\u0645\u062a\u0643\u0631\u0631\u0629 \u0627\u0644\u0635\u0627\u062f\u0631\u0629 \u0639\u0646
-          \u0647\u064a\u0626\u0629 \u0627\u0644\u0633\u0648\u0642 \u0627\u0644\u0645\u0627\u0644\u064a\u0629
+          يستند إلى اللوائح التنفيذية والتعاميم والأسئلة المتكررة الصادرة عن
+          هيئة السوق المالية
         </p>
       </div>
     </div>

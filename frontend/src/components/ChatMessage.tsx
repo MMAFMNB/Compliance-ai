@@ -14,7 +14,7 @@ interface ChatMessageProps {
  * Detect if text is predominantly Arabic.
  */
 function isArabic(text: string): boolean {
-  const arabicChars = text.match(/[\u0600-\u06FF]/g);
+  const arabicChars = text.match(/[؀-ۿ]/g);
   if (!arabicChars) return false;
   return arabicChars.length / text.length > 0.3;
 }
