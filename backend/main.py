@@ -15,6 +15,11 @@ from search import router as search_router
 from review import router as review_router
 from alerts import router as alerts_router
 from dashboard import router as dashboard_router
+from calendar_routes import router as calendar_router
+from impact_analysis import router as impact_analysis_router
+from docgen import router as docgen_router
+from checklist import router as checklist_router
+from self_assessment import router as self_assessment_router
 
 app = FastAPI(
     title="TAM Compliance AI",
@@ -80,6 +85,11 @@ app.include_router(search_router)
 app.include_router(review_router)
 app.include_router(alerts_router)
 app.include_router(dashboard_router)
+app.include_router(calendar_router)
+app.include_router(impact_analysis_router)
+app.include_router(docgen_router)
+app.include_router(checklist_router)
+app.include_router(self_assessment_router)
 
 
 @app.get("/")
