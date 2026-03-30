@@ -76,11 +76,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // Create profile row via backend (uses service role to bypass RLS)
       if (data.user) {
-        await fetch(`${API_URL}/api/auth/signup`, {
+        const res = await fetch(`${API_URL}/api/auth/profile`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password, name, organization }),
+          body: JSON.stringify({
+            user_id: data.user.id,
+            email,
+            name,
+            organization,
+          }),
         });
+        if (!res.ok) {
+          const body = await res.json().catch(() => null);
+          throw new Error(
+            body?.detail || "Failed to create profile"
+          );
+        }
       }
     },
     []

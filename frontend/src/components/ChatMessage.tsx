@@ -2,6 +2,7 @@
 
 import ReactMarkdown from "react-markdown";
 import { Scale, User } from "lucide-react";
+import FeedbackButtons from "./FeedbackButtons";
 
 interface ChatMessageProps {
   role: "user" | "assistant";
@@ -109,6 +110,11 @@ export default function ChatMessage({
             </ReactMarkdown>
           )}
         </div>
+        {!isUser && !isStreaming && content.length > 0 && (
+          <div className="mt-2">
+            <FeedbackButtons feature="chat" originalOutput={content} />
+          </div>
+        )}
       </div>
     </div>
   );

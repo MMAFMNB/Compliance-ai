@@ -8,11 +8,29 @@ class Language(str, Enum):
     English = "en"
 
 
+class UserRole(str, Enum):
+    super_admin = "super_admin"
+    firm_admin = "firm_admin"
+    compliance_officer = "compliance_officer"
+    analyst = "analyst"
+    auditor = "auditor"
+    read_only = "read_only"
+
+
 # ─── Auth ───────────────────────────────────────────────────
 
 class SignUpRequest(BaseModel):
     email: str
     password: str
+    name: str
+    organization: str = "TAM Capital"
+    language_pref: Language = Language.Arabic
+
+
+class CreateProfileRequest(BaseModel):
+    """Create a profile row for an already-registered Supabase auth user."""
+    user_id: str
+    email: str
     name: str
     organization: str = "TAM Capital"
     language_pref: Language = Language.Arabic
@@ -39,6 +57,7 @@ class UserProfile(BaseModel):
     name: str
     organization: str
     role: str
+    firm_id: Optional[str] = None
     language_pref: Language
 
 

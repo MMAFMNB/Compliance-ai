@@ -12,7 +12,7 @@ import {
   Loader2,
   ChevronDown,
 } from "lucide-react";
-import { useAuth } from "@/lib/AuthContext";
+import { useRequireAuth } from "@/lib/useRequireAuth";
 import { supabase } from "@/lib/supabase";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -73,7 +73,7 @@ function getBarColor(score: number) {
 
 export default function SelfAssessmentPage() {
   const router = useRouter();
-  const { user, isLoading: isAuthLoading } = useAuth();
+  const { user, isLoading: isAuthLoading } = useRequireAuth();
 
   const [assessment, setAssessment] = useState<AssessmentResult | null>(null);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
@@ -84,15 +84,11 @@ export default function SelfAssessmentPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!isAuthLoading && !user) {
-      router.push("/login");
-      return;
-    }
     if (user) {
       fetchLatest();
       fetchHistory();
     }
-  }, [user, isAuthLoading, router]);
+  }, [user]);
 
   const fetchLatest = async () => {
     try {

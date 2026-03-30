@@ -30,15 +30,16 @@ class ImpactAnalysisRequest(BaseModel):
 class ActionItem(BaseModel):
     action: str
     priority: str  # high / medium / low
-    deadline_suggestion: str | None = None
+    deadline: str | None = None  # matches frontend field name
 
 
 class ImpactAnalysisOut(BaseModel):
     id: str
     alert_id: str
+    alert_title: str | None = None
     impact_level: str  # high / medium / low / none
     affected_areas: list[str]
-    detailed_analysis: str
+    analysis: str  # matches frontend field name
     action_items: list[ActionItem]
     latency_ms: int
     created_at: str
@@ -64,18 +65,18 @@ Perform a detailed Regulatory Change Impact Analysis for a CMA-licensed asset ma
 4. **Action Items**: Provide specific action items the compliance team must take. Each action item must include:
    - "action": description of what needs to be done
    - "priority": "high", "medium", or "low"
-   - "deadline_suggestion": a suggested deadline or timeframe (e.g. "Within 30 days", "Before next quarterly report"), or null if not applicable
+   - "deadline": a suggested deadline or timeframe (e.g. "Within 30 days", "Before next quarterly report"), or null if not applicable
 
 Return ONLY a JSON object with the following keys (no extra text):
 {{
   "impact_level": "high|medium|low|none",
   "affected_areas": ["area1", "area2"],
-  "detailed_analysis": "Arabic analysis...\n\nEnglish analysis...",
+  "analysis": "Arabic analysis...\n\nEnglish analysis...",
   "action_items": [
     {{
       "action": "...",
       "priority": "high|medium|low",
-      "deadline_suggestion": "..." or null
+      "deadline": "..." or null
     }}
   ]
 }}"""
@@ -150,7 +151,7 @@ def create_impact_analysis(
         "user_id": user["id"],
         "impact_level": analysis_data.get("impact_level", "none"),
         "affected_areas": analysis_data.get("affected_areas", []),
-        "detailed_analysis": analysis_data.get("detailed_analysis", ""),
+        "detailed_analysis": analysis_data.get("analysis", analysis_data.get("detailed_analysis", "")),
         "action_items": analysis_data.get("action_items", []),
         "latency_ms": latency_ms,
     }
@@ -167,44 +168,63 @@ def create_impact_analysis(
 
     saved = insert_result.data[0]
 
-    return ImpactAnalysisOut(
-        id=saved["id"],
-        alert_id=saved["alert_id"],
-        impact_level=saved["impact_level"],
-        affected_areas=saved["affected_areas"],
-        detailed_analysis=saved["detailed_analysis"],
-        action_items=[ActionItem(**item) for item in saved["action_items"]],
-        latency_ms=saved["latency_ms"],
-        created_at=saved["created_at"],
-    )
+    return _row_to_out(saved, alert_title=alert.get("title"))
 
 
-@router.get("/impact-analysis/{analysis_id}", response_model=ImpactAnalysisOut)
-def get_impact_analysis(
-    analysis_id: str,
-    user: dict = Depends(get_current_user),
-):
-    """Fetch a stored impact analysis by its ID."""
-    result = (
-        supabase_admin.table("impact_analyses")
-        .select("*")
-        .eq("id", analysis_id)
-        .execute()
-    )
-    if not result.data:
-        raise HTTPException(status_code=404, detail="Impact analysis not found")
-
-    row = result.data[0]
+def _row_to_out(row: dict, alert_title: str | None = None) -> ImpactAnalysisOut:
+    """Convert a DB row to an ImpactAnalysisOut, mapping field names."""
+    action_items = row.get("action_items") or []
+    parsed_items = []
+    for item in action_items:
+        parsed_items.append(ActionItem(
+            action=item.get("action", ""),
+            priority=item.get("priority", "medium"),
+            deadline=item.get("deadline") or item.get("deadline_suggestion"),
+        ))
     return ImpactAnalysisOut(
         id=row["id"],
         alert_id=row["alert_id"],
+        alert_title=alert_title,
         impact_level=row["impact_level"],
         affected_areas=row["affected_areas"],
-        detailed_analysis=row["detailed_analysis"],
-        action_items=[ActionItem(**item) for item in row["action_items"]],
+        analysis=row.get("detailed_analysis", ""),
+        action_items=parsed_items,
         latency_ms=row["latency_ms"],
         created_at=row["created_at"],
     )
+
+
+def _enrich_alert_titles(rows: list[dict]) -> list[ImpactAnalysisOut]:
+    """Fetch alert titles for a list of analysis rows."""
+    alert_ids = list({r["alert_id"] for r in rows})
+    title_map: dict[str, str] = {}
+    if alert_ids:
+        try:
+            alerts_result = (
+                supabase_admin.table("alerts")
+                .select("id, title")
+                .in_("id", alert_ids)
+                .execute()
+            )
+            title_map = {a["id"]: a["title"] for a in alerts_result.data}
+        except Exception:
+            pass
+    return [_row_to_out(r, alert_title=title_map.get(r["alert_id"])) for r in rows]
+
+
+@router.get("/impact-analysis", response_model=list[ImpactAnalysisOut])
+def list_impact_analyses(
+    user: dict = Depends(get_current_user),
+):
+    """List all impact analyses for the current user."""
+    result = (
+        supabase_admin.table("impact_analyses")
+        .select("*")
+        .eq("user_id", user["id"])
+        .order("created_at", desc=True)
+        .execute()
+    )
+    return _enrich_alert_titles(result.data)
 
 
 @router.get("/impact-analysis/by-alert/{alert_id}", response_model=ImpactAnalysisOut)
@@ -225,13 +245,37 @@ def get_impact_analysis_by_alert(
         raise HTTPException(status_code=404, detail="No impact analysis found for this alert")
 
     row = result.data[0]
-    return ImpactAnalysisOut(
-        id=row["id"],
-        alert_id=row["alert_id"],
-        impact_level=row["impact_level"],
-        affected_areas=row["affected_areas"],
-        detailed_analysis=row["detailed_analysis"],
-        action_items=[ActionItem(**item) for item in row["action_items"]],
-        latency_ms=row["latency_ms"],
-        created_at=row["created_at"],
+    # Fetch alert title
+    try:
+        alert_result = supabase_admin.table("alerts").select("title").eq("id", alert_id).limit(1).execute()
+        alert_title = alert_result.data[0]["title"] if alert_result.data else None
+    except Exception:
+        alert_title = None
+
+    return _row_to_out(row, alert_title=alert_title)
+
+
+@router.get("/impact-analysis/{analysis_id}", response_model=ImpactAnalysisOut)
+def get_impact_analysis(
+    analysis_id: str,
+    user: dict = Depends(get_current_user),
+):
+    """Fetch a stored impact analysis by its ID."""
+    result = (
+        supabase_admin.table("impact_analyses")
+        .select("*")
+        .eq("id", analysis_id)
+        .execute()
     )
+    if not result.data:
+        raise HTTPException(status_code=404, detail="Impact analysis not found")
+
+    row = result.data[0]
+    # Fetch alert title
+    try:
+        alert_result = supabase_admin.table("alerts").select("title").eq("id", row["alert_id"]).limit(1).execute()
+        alert_title = alert_result.data[0]["title"] if alert_result.data else None
+    except Exception:
+        alert_title = None
+
+    return _row_to_out(row, alert_title=alert_title)

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Zap,
@@ -10,7 +10,7 @@ import {
   Scale,
   Loader2,
 } from "lucide-react";
-import { useAuth } from "@/lib/AuthContext";
+import { useRequireAuth } from "@/lib/useRequireAuth";
 import { supabase } from "@/lib/supabase";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -46,9 +46,23 @@ const PRIORITY_CONFIG: Record<string, { label: string; color: string; bg: string
 };
 
 export default function ImpactAnalysisPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center h-screen">
+          <Loader2 size={32} className="animate-spin text-tam-light" />
+        </div>
+      }
+    >
+      <ImpactAnalysisContent />
+    </Suspense>
+  );
+}
+
+function ImpactAnalysisContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user, isLoading: isAuthLoading } = useAuth();
+  const { user, isLoading: isAuthLoading } = useRequireAuth();
 
   const alertId = searchParams.get("alert_id");
 
@@ -59,10 +73,6 @@ export default function ImpactAnalysisPage() {
   const [showRunButton, setShowRunButton] = useState(false);
 
   useEffect(() => {
-    if (!isAuthLoading && !user) {
-      router.push("/login");
-      return;
-    }
     if (user) {
       if (alertId) {
         checkExistingAnalysis(alertId);
@@ -70,7 +80,7 @@ export default function ImpactAnalysisPage() {
         fetchAnalyses();
       }
     }
-  }, [user, isAuthLoading, router, alertId]);
+  }, [user, alertId]);
 
   const getToken = async () => {
     const { data: { session } } = await supabase.auth.getSession();

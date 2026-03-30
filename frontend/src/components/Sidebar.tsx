@@ -17,12 +17,17 @@ import {
   FilePlus,
   ClipboardCheck,
   Activity,
+  Shield,
+  Building2,
+  BookOpen,
 } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 import {
   getConversations,
   deleteConversation,
   ConversationPreview,
+  logoutBackend,
+  getProfile,
 } from "@/lib/api";
 
 interface SidebarProps {
@@ -41,12 +46,21 @@ export default function Sidebar({
   const router = useRouter();
   const { user, signOut } = useAuth();
   const [conversations, setConversations] = useState<ConversationPreview[]>([]);
+  const [userRole, setUserRole] = useState<string>("");
 
   useEffect(() => {
     getConversations()
       .then(setConversations)
       .catch(() => setConversations([]));
   }, [refreshKey]);
+
+  useEffect(() => {
+    if (user) {
+      getProfile()
+        .then((p) => setUserRole(p.role))
+        .catch(() => {});
+    }
+  }, [user]);
 
   const handleDelete = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
@@ -142,11 +156,33 @@ export default function Sidebar({
           onClick={() => router.push("/self-assessment")}
         />
         <NavItem
+          icon={<BookOpen size={16} />}
+          label="الاستخبارات التنظيمية"
+          sublabel="Regulatory Intelligence"
+          onClick={() => router.push("/regulatory")}
+        />
+        <NavItem
           icon={<LayoutDashboard size={16} />}
           label="لوحة المتابعة"
           sublabel="Dashboard"
           onClick={() => router.push("/dashboard")}
         />
+        {userRole === "super_admin" && (
+          <NavItem
+            icon={<Shield size={16} />}
+            label="إدارة النظام"
+            sublabel="Super Admin"
+            onClick={() => router.push("/admin")}
+          />
+        )}
+        {(userRole === "super_admin" || userRole === "firm_admin") && (
+          <NavItem
+            icon={<Building2 size={16} />}
+            label="إدارة الشركة"
+            sublabel="Firm Admin"
+            onClick={() => router.push("/firm-admin")}
+          />
+        )}
       </nav>
 
       {/* Conversation History */}
@@ -192,7 +228,10 @@ export default function Sidebar({
               <p className="text-xs truncate">{user.email}</p>
             </div>
             <button
-              onClick={() => signOut()}
+              onClick={async () => {
+                await logoutBackend().catch(() => {});
+                signOut();
+              }}
               className="text-white/40 hover:text-white/80 transition-colors"
               aria-label="Sign out"
             >

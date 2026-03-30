@@ -188,10 +188,14 @@ def save_alerts(items: list[dict]) -> int:
     return len(rows)
 
 
-def run_scraper() -> dict:
+def run_scraper(parse_circulars: bool = True) -> dict:
     """Run the full CMA scraper pipeline.
 
-    Returns a summary with counts of new items found.
+    1. Scrape CMA news and circulars pages for new items
+    2. Save new alerts to the database
+    3. Optionally generate impact summaries and parse obligations
+
+    Returns a summary with counts.
     """
     logger.info("Starting CMA scraper...")
 
@@ -214,8 +218,25 @@ def run_scraper() -> dict:
     saved = save_alerts(unique_items)
     logger.info("Saved %d new alerts", saved)
 
-    return {
+    result = {
         "news_found": len(news_items),
         "circulars_found": len(circular_items),
         "total_saved": saved,
+        "impact_summaries_generated": 0,
+        "obligations_extracted": 0,
     }
+
+    if parse_circulars and saved > 0:
+        # Step 2: Generate impact summaries for new alerts
+        from alerts import process_unprocessed_alerts
+        processed = process_unprocessed_alerts()
+        result["impact_summaries_generated"] = processed
+        logger.info("Generated %d impact summaries", processed)
+
+        # Step 3: Parse circulars for obligations
+        from circular_parser import process_unparsed_alerts
+        parse_result = process_unparsed_alerts()
+        result["obligations_extracted"] = parse_result["total_obligations"]
+        logger.info("Extracted %d obligations", parse_result["total_obligations"])
+
+    return result

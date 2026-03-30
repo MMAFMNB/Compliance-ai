@@ -13,7 +13,7 @@ import {
   Scale,
   FileText,
 } from "lucide-react";
-import { useAuth } from "@/lib/AuthContext";
+import { useRequireAuth } from "@/lib/useRequireAuth";
 import { supabase } from "@/lib/supabase";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -74,19 +74,13 @@ const STATUS_CONFIG = {
 
 export default function ReviewPage() {
   const router = useRouter();
-  const { user, isLoading: isAuthLoading } = useAuth();
+  const { user, isLoading: isAuthLoading } = useRequireAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isReviewing, setIsReviewing] = useState(false);
   const [result, setResult] = useState<ReviewResult | null>(null);
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    if (!isAuthLoading && !user) {
-      router.push("/login");
-    }
-  }, [user, isAuthLoading, router]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

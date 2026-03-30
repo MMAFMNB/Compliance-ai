@@ -44,7 +44,9 @@ class AssessmentOut(BaseModel):
     license_type: str
     overall_score: Optional[float] = None
     total_items: int
-    compliant_items: int
+    compliant_count: int
+    partial_count: int = 0
+    non_compliant_count: int = 0
     gap_analysis: Optional[str] = None
     remediation_plan: Optional[str] = None
     latency_ms: Optional[int] = None
@@ -300,7 +302,12 @@ async def get_requirements(
     license_type: str = Query(..., description="License type to filter requirements"),
     user: dict = Depends(get_current_user),
 ):
-    """Return compliance requirements for a license type, grouped by category."""
+    """Return compliance requirements for a license type as a flat list.
+
+    Each requirement is mapped to frontend field names:
+    - text_ar (from requirement), text_en (from requirement_en),
+      cma_reference, category, id.
+    """
     seed_requirements()
 
     result = (
@@ -311,14 +318,17 @@ async def get_requirements(
         .execute()
     )
 
-    grouped: dict[str, list] = {}
+    requirements = []
     for req in result.data:
-        cat = req["category"]
-        if cat not in grouped:
-            grouped[cat] = []
-        grouped[cat].append(req)
+        requirements.append({
+            "id": req["id"],
+            "text_ar": req["requirement"],
+            "text_en": req.get("requirement_en", ""),
+            "cma_reference": req.get("cma_reference", ""),
+            "category": req["category"],
+        })
 
-    return {"license_type": license_type, "categories": grouped}
+    return {"requirements": requirements}
 
 
 @router.post("/assessment", response_model=AssessmentOut)
@@ -331,8 +341,10 @@ async def create_assessment(
 
     # Calculate scores
     total_items = len(payload.items)
-    compliant_items = sum(1 for it in payload.items if it.status == "compliant")
-    overall_score = round((compliant_items / total_items) * 100, 2) if total_items > 0 else 0.0
+    compliant_count = sum(1 for it in payload.items if it.status == "compliant")
+    partial_count = sum(1 for it in payload.items if it.status == "partial")
+    non_compliant_count = sum(1 for it in payload.items if it.status == "non_compliant")
+    overall_score = round((compliant_count / total_items) * 100, 2) if total_items > 0 else 0.0
 
     # Insert assessment record
     assessment_data = {
@@ -340,7 +352,9 @@ async def create_assessment(
         "license_type": payload.license_type,
         "overall_score": overall_score,
         "total_items": total_items,
-        "compliant_items": compliant_items,
+        "compliant_count": compliant_count,
+        "partial_count": partial_count,
+        "non_compliant_count": non_compliant_count,
     }
     assessment_result = (
         supabase_admin.table("compliance_assessments")
@@ -443,7 +457,24 @@ Respond ONLY with the JSON object, no additional text."""
         .single()
         .execute()
     )
-    return final.data
+    return _assessment_row_to_out(final.data)
+
+
+def _assessment_row_to_out(row: dict) -> dict:
+    """Map DB row to AssessmentOut fields, handling old column names."""
+    return {
+        "id": row["id"],
+        "license_type": row["license_type"],
+        "overall_score": row.get("overall_score"),
+        "total_items": row.get("total_items", 0),
+        "compliant_count": row.get("compliant_count", row.get("compliant_items", 0)),
+        "partial_count": row.get("partial_count", 0),
+        "non_compliant_count": row.get("non_compliant_count", 0),
+        "gap_analysis": row.get("gap_analysis"),
+        "remediation_plan": row.get("remediation_plan"),
+        "latency_ms": row.get("latency_ms"),
+        "created_at": row["created_at"],
+    }
 
 
 @router.get("/assessments", response_model=list[AssessmentOut])
@@ -456,7 +487,7 @@ async def list_assessments(user: dict = Depends(get_current_user)):
         .order("created_at", desc=True)
         .execute()
     )
-    return result.data
+    return [_assessment_row_to_out(r) for r in result.data]
 
 
 @router.get("/assessments/{assessment_id}", response_model=AssessmentDetailOut)

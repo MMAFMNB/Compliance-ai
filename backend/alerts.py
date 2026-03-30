@@ -163,3 +163,111 @@ def trigger_processing(user: dict = Depends(get_current_user)):
     """Manually trigger impact summary generation for unprocessed alerts."""
     processed = process_unprocessed_alerts()
     return {"processed": processed}
+
+
+@router.post("/alerts/scrape")
+def trigger_scrape(user: dict = Depends(get_current_user)):
+    """Run the full CMA scraper pipeline: scrape, summarize, and parse."""
+    from scraper import run_scraper
+    result = run_scraper(parse_circulars=True)
+    return result
+
+
+@router.post("/alerts/parse")
+def trigger_parse(user: dict = Depends(get_current_user)):
+    """Parse unprocessed alerts for regulatory obligations."""
+    from circular_parser import process_unparsed_alerts
+    result = process_unparsed_alerts()
+    return result
+
+
+@router.get("/obligations")
+def list_obligations(
+    category: str | None = Query(None),
+    priority: str | None = Query(None),
+    status: str | None = Query(None),
+    limit: int = Query(50, ge=1, le=200),
+    user: dict = Depends(get_current_user),
+):
+    """List regulatory obligations extracted from CMA circulars."""
+    query = (
+        supabase_admin.table("regulatory_obligations")
+        .select("*, alerts(title, title_en, doc_type, source_url)")
+        .order("created_at", desc=True)
+        .limit(limit)
+    )
+    if category:
+        query = query.eq("category", category)
+    if priority:
+        query = query.eq("priority", priority)
+    if status:
+        query = query.eq("status", status)
+
+    result = query.execute()
+    return {"obligations": result.data, "total": len(result.data)}
+
+
+@router.patch("/obligations/{obligation_id}/status")
+def update_obligation_status(
+    obligation_id: str,
+    status: str = Query(..., description="pending, acknowledged, or completed"),
+    user: dict = Depends(get_current_user),
+):
+    """Update the status of a regulatory obligation."""
+    if status not in ("pending", "acknowledged", "completed"):
+        from fastapi import HTTPException
+        raise HTTPException(status_code=400, detail="Invalid status")
+    supabase_admin.table("regulatory_obligations").update(
+        {"status": status}
+    ).eq("id", obligation_id).execute()
+    return {"status": "updated"}
+
+
+@router.post("/obligations/{obligation_id}/assign")
+def assign_obligation(
+    obligation_id: str,
+    assigned_to: str = Query(..., description="User ID to assign to"),
+    due_date: str | None = Query(None, description="Due date YYYY-MM-DD"),
+    user: dict = Depends(get_current_user),
+):
+    """Assign a regulatory obligation to a user with an optional due date."""
+    updates: dict = {
+        "assigned_to": assigned_to,
+        "status": "acknowledged",
+    }
+    if due_date:
+        updates["deadline_date"] = due_date
+    supabase_admin.table("regulatory_obligations").update(
+        updates
+    ).eq("id", obligation_id).execute()
+    return {"status": "assigned"}
+
+
+@router.get("/obligations/summary")
+def obligations_summary(user: dict = Depends(get_current_user)):
+    """Summary statistics for the regulatory intelligence dashboard."""
+    all_obs = (
+        supabase_admin.table("regulatory_obligations")
+        .select("id, priority, status, category, deadline_date")
+        .execute()
+    )
+
+    total = len(all_obs.data)
+    pending = sum(1 for o in all_obs.data if o["status"] == "pending")
+    acknowledged = sum(1 for o in all_obs.data if o["status"] == "acknowledged")
+    completed = sum(1 for o in all_obs.data if o["status"] == "completed")
+    high_priority = sum(1 for o in all_obs.data if o["priority"] == "high" and o["status"] != "completed")
+
+    by_category: dict[str, int] = {}
+    for o in all_obs.data:
+        cat = o.get("category", "other")
+        by_category[cat] = by_category.get(cat, 0) + 1
+
+    return {
+        "total": total,
+        "pending": pending,
+        "acknowledged": acknowledged,
+        "completed": completed,
+        "high_priority_open": high_priority,
+        "by_category": by_category,
+    }

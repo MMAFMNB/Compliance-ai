@@ -12,7 +12,7 @@ import {
   ArrowRight,
   Scale,
 } from "lucide-react";
-import { useAuth } from "@/lib/AuthContext";
+import { useRequireAuth } from "@/lib/useRequireAuth";
 import { supabase } from "@/lib/supabase";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -72,7 +72,7 @@ function getDaysRemaining(dateStr: string): number {
 
 export default function CalendarPage() {
   const router = useRouter();
-  const { user, isLoading: isAuthLoading } = useAuth();
+  const { user, isLoading: isAuthLoading } = useRequireAuth();
 
   const [deadlines, setDeadlines] = useState<Deadline[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -94,12 +94,8 @@ export default function CalendarPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!isAuthLoading && !user) {
-      router.push("/login");
-      return;
-    }
     if (user) fetchDeadlines();
-  }, [user, isAuthLoading, router]);
+  }, [user]);
 
   const fetchDeadlines = async () => {
     try {

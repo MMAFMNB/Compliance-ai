@@ -11,8 +11,11 @@ import {
   Scale,
   Loader2,
   ChevronDown,
+  Send,
+  CheckCircle2,
+  XCircle,
 } from "lucide-react";
-import { useAuth } from "@/lib/AuthContext";
+import { useRequireAuth } from "@/lib/useRequireAuth";
 import { supabase } from "@/lib/supabase";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -60,7 +63,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 export default function DocGenPage() {
   const router = useRouter();
-  const { user, isLoading: isAuthLoading } = useAuth();
+  const { user, isLoading: isAuthLoading } = useRequireAuth();
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [templates, setTemplates] = useState<Template[]>([]);
@@ -75,15 +78,11 @@ export default function DocGenPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!isAuthLoading && !user) {
-      router.push("/login");
-      return;
-    }
     if (user) {
       fetchTemplates();
       fetchHistory();
     }
-  }, [user, isAuthLoading, router]);
+  }, [user]);
 
   const getAuthHeader = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -422,6 +421,26 @@ export default function DocGenPage() {
               >
                 <FilePlus size={14} />
                 إنشاء مستند آخر
+              </button>
+              <button
+                onClick={async () => {
+                  try {
+                    const { data: { session } } = await supabase.auth.getSession();
+                    await fetch(`${API_URL}/api/documents/generated/${generatedDoc.id}/submit-review`, {
+                      method: "POST",
+                      headers: {
+                        Authorization: `Bearer ${session?.access_token}`,
+                        "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify({}),
+                    });
+                    setError("");
+                  } catch {}
+                }}
+                className="flex items-center gap-1.5 px-4 py-2 bg-amber-50 text-amber-700 border border-amber-200 rounded-lg text-xs hover:bg-amber-100 transition-colors"
+              >
+                <Send size={14} />
+                إرسال للمراجعة — Submit Review
               </button>
             </div>
 

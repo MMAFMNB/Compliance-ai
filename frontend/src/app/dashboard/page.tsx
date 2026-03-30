@@ -14,7 +14,7 @@ import {
   FileSearch,
   Clock,
 } from "lucide-react";
-import { useAuth } from "@/lib/AuthContext";
+import { useRequireAuth } from "@/lib/useRequireAuth";
 import { supabase } from "@/lib/supabase";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -39,19 +39,15 @@ interface AuditEntry {
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { user, isLoading: isAuthLoading } = useAuth();
+  const { user, isLoading: isAuthLoading } = useRequireAuth();
 
   const [stats, setStats] = useState<Stats | null>(null);
   const [audit, setAudit] = useState<AuditEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!isAuthLoading && !user) {
-      router.push("/login");
-      return;
-    }
     if (user) fetchData();
-  }, [user, isAuthLoading, router]);
+  }, [user]);
 
   const fetchData = async () => {
     try {

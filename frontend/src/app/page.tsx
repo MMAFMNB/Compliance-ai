@@ -6,12 +6,12 @@ import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
 import Sidebar from "@/components/Sidebar";
 import { streamMessage, getConversation, Message } from "@/lib/api";
-import { useAuth } from "@/lib/AuthContext";
+import { useRequireAuth } from "@/lib/useRequireAuth";
 import { Scale, Loader2 } from "lucide-react";
 
 export default function Home() {
   const router = useRouter();
-  const { user, isLoading: isAuthLoading } = useAuth();
+  const { user, isLoading: isAuthLoading } = useRequireAuth();
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -19,13 +19,6 @@ export default function Home() {
   const [streamingContent, setStreamingContent] = useState("");
   const [conversationRefreshKey, setConversationRefreshKey] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!isAuthLoading && !user) {
-      router.push("/login");
-    }
-  }, [user, isAuthLoading, router]);
 
   // Auto-scroll to bottom
   useEffect(() => {

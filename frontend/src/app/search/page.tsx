@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Search, Loader2, FileText, ArrowRight, Scale } from "lucide-react";
-import { useAuth } from "@/lib/AuthContext";
+import { useRequireAuth } from "@/lib/useRequireAuth";
 import { supabase } from "@/lib/supabase";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -21,19 +21,13 @@ interface SearchResult {
 
 export default function SearchPage() {
   const router = useRouter();
-  const { user, isLoading: isAuthLoading } = useAuth();
+  const { user, isLoading: isAuthLoading } = useRequireAuth();
 
   const [query, setQuery] = useState("");
   const [docType, setDocType] = useState<string>("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
-
-  useEffect(() => {
-    if (!isAuthLoading && !user) {
-      router.push("/login");
-    }
-  }, [user, isAuthLoading, router]);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();

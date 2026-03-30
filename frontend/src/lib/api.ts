@@ -129,6 +129,28 @@ export async function streamMessage(
   }
 }
 
+export interface UserProfile {
+  id: string;
+  email: string;
+  name: string;
+  organization: string;
+  role: string;
+  firm_id: string | null;
+  language_pref: string;
+}
+
+export async function getProfile(): Promise<UserProfile> {
+  const headers = await getAuthHeaders();
+  const res = await fetch(`${API_URL}/api/auth/me`, { headers });
+  if (!res.ok) throw new Error(`${res.status}`);
+  return res.json();
+}
+
+export async function logoutBackend(): Promise<void> {
+  const headers = await getAuthHeaders();
+  await fetch(`${API_URL}/api/auth/logout`, { method: "POST", headers });
+}
+
 export async function getConversations(): Promise<ConversationPreview[]> {
   const headers = await getAuthHeaders();
   const res = await fetch(`${API_URL}/api/conversations`, { headers });

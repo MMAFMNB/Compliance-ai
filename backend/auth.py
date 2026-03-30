@@ -112,5 +112,6 @@ def get_current_user(
         "name": "",
         "organization": "",
         "role": "compliance_officer",
+        "firm_id": None,
         "language_pref": "ar",
     }

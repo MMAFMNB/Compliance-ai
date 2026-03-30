@@ -6,6 +6,7 @@ from auth import get_current_user
 from database import supabase, supabase_admin
 from models import (
     SignUpRequest,
+    CreateProfileRequest,
     SignInRequest,
     RefreshTokenRequest,
     UpdateProfileRequest,
@@ -51,6 +52,43 @@ def signup(request: SignUpRequest):
         "email": request.email,
         "message": "Account created. Check your email for confirmation.",
     }
+
+
+@router.post("/profile")
+def create_profile(request: CreateProfileRequest):
+    """Create a profile row for an already-registered Supabase auth user.
+
+    Called by the frontend after Supabase client-side signup succeeds.
+    This avoids the double-signup issue where both frontend and backend
+    call supabase.auth.sign_up().
+    """
+    try:
+        supabase_admin.table("users").insert(
+            {
+                "id": request.user_id,
+                "email": request.email,
+                "name": request.name,
+                "organization": request.organization,
+                "language_pref": request.language_pref.value,
+            }
+        ).execute()
+    except Exception:
+        logger.exception("Failed to create user profile row")
+        raise HTTPException(status_code=400, detail="Failed to create profile")
+
+    return {"status": "created", "user_id": request.user_id}
+
+
+@router.post("/logout")
+def logout(user: dict = Depends(get_current_user)):
+    """Log out the current user.
+
+    With JWT-based auth the actual session invalidation happens client-side
+    via Supabase. This endpoint exists for audit logging and future
+    server-side session revocation.
+    """
+    logger.info("User %s logged out", user.get("id"))
+    return {"status": "logged_out"}
 
 
 @router.post("/signin")
@@ -106,6 +144,7 @@ def get_profile(user: dict = Depends(get_current_user)):
         name=user.get("name", ""),
         organization=user.get("organization", ""),
         role=user.get("role", "compliance_officer"),
+        firm_id=user.get("firm_id"),
         language_pref=user.get("language_pref", "ar"),
     )
 

@@ -14,7 +14,7 @@ import {
   BookOpen,
   HelpCircle,
 } from "lucide-react";
-import { useAuth } from "@/lib/AuthContext";
+import { useRequireAuth } from "@/lib/useRequireAuth";
 import { supabase } from "@/lib/supabase";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -43,7 +43,7 @@ const DOC_TYPE_CONFIG: Record<string, { icon: typeof FileText; label: string; co
 
 export default function AlertsPage() {
   const router = useRouter();
-  const { user, isLoading: isAuthLoading } = useAuth();
+  const { user, isLoading: isAuthLoading } = useRequireAuth();
 
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -51,12 +51,8 @@ export default function AlertsPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isAuthLoading && !user) {
-      router.push("/login");
-      return;
-    }
     if (user) fetchAlerts();
-  }, [user, isAuthLoading, router]);
+  }, [user]);
 
   const fetchAlerts = async () => {
     try {

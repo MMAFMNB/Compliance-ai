@@ -318,6 +318,34 @@ async def get_latest_assessment(user: dict = Depends(get_current_user)):
     )
 
 
+@router.get("/{assessment_id}", response_model=SelfAssessmentOut)
+async def get_assessment_by_id(
+    assessment_id: str,
+    user: dict = Depends(get_current_user),
+):
+    """Return a specific self-assessment by ID."""
+    resp = (
+        supabase_admin.table("self_assessments")
+        .select("id, overall_score, category_scores, recommendations, created_at, latency_ms")
+        .eq("id", assessment_id)
+        .eq("user_id", user["id"])
+        .limit(1)
+        .execute()
+    )
+    if not resp.data:
+        raise HTTPException(status_code=404, detail="Self-assessment not found")
+
+    row = resp.data[0]
+    return SelfAssessmentOut(
+        id=row["id"],
+        overall_score=row["overall_score"],
+        category_scores=row["category_scores"],
+        recommendations=row["recommendations"],
+        created_at=row["created_at"],
+        latency_ms=row["latency_ms"],
+    )
+
+
 @router.get("/history", response_model=AssessmentHistoryOut)
 async def get_assessment_history(
     limit: int = Query(default=10, ge=1, le=100),

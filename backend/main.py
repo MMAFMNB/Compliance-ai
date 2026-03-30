@@ -20,6 +20,8 @@ from impact_analysis import router as impact_analysis_router
 from docgen import router as docgen_router
 from checklist import router as checklist_router
 from self_assessment import router as self_assessment_router
+from admin_routes import router as admin_router
+from feedback import router as feedback_router
 
 app = FastAPI(
     title="TAM Compliance AI",
@@ -78,6 +80,41 @@ async def http_exception_handler(request: Request, exc: HTTPException):
     )
 
 
+# ─── Usage tracking middleware ────────────────────────────
+# Logs POST/PUT/PATCH/DELETE requests to usage_events for analytics.
+# Runs after the response so it never blocks the request.
+
+TRACKED_PREFIXES = (
+    "/api/chat", "/api/review", "/api/search", "/api/documents",
+    "/api/checklist", "/api/assessment", "/api/impact-analysis",
+    "/api/calendar",
+)
+
+@app.middleware("http")
+async def usage_tracking_middleware(request: Request, call_next):
+    response = await call_next(request)
+    # Only track mutating or primary-use endpoints on success
+    if (
+        request.method in ("POST", "PUT", "PATCH", "DELETE")
+        and response.status_code < 400
+        and any(request.url.path.startswith(p) for p in TRACKED_PREFIXES)
+    ):
+        # Extract user_id from request state if available (set by auth dependency)
+        # We fire-and-forget the insert to avoid slowing the response
+        try:
+            from database import supabase_admin as _sa
+            # Determine event type from the path
+            path = request.url.path
+            event_type = path.split("/api/")[1].split("/")[0] if "/api/" in path else "unknown"
+            _sa.table("usage_events").insert({
+                "event_type": event_type,
+                "metadata": {"method": request.method, "path": path},
+            }).execute()
+        except Exception:
+            pass  # Never fail the request due to usage tracking
+    return response
+
+
 app.include_router(auth_router)
 app.include_router(chat_router)
 app.include_router(conversations_router)
@@ -90,6 +127,8 @@ app.include_router(impact_analysis_router)
 app.include_router(docgen_router)
 app.include_router(checklist_router)
 app.include_router(self_assessment_router)
+app.include_router(admin_router)
+app.include_router(feedback_router)
 
 
 @app.get("/")
