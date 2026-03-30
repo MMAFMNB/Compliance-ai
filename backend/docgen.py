@@ -9,12 +9,11 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 
 from auth import get_current_user
+from api_utils import call_anthropic
 from config import ANTHROPIC_API_KEY, MODEL, load_system_prompt
 from database import supabase_admin
 
 router = APIRouter(prefix="/api/documents", tags=["docgen"])
-
-client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 
 
 # ---------------------------------------------------------------------------
@@ -332,8 +331,7 @@ async def generate_document(
     # Call Claude
     system_prompt = load_system_prompt()
     start = time.time()
-    response = client.messages.create(
-        model=MODEL,
+    response = call_anthropic(
         max_tokens=4096,
         system=system_prompt,
         messages=[{"role": "user", "content": formatted_prompt}],

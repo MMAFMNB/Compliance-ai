@@ -11,13 +11,12 @@ from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from pydantic import BaseModel
 
 from auth import get_current_user
+from api_utils import call_anthropic
 from config import ANTHROPIC_API_KEY, MODEL, load_system_prompt
 from database import supabase_admin
 
 router = APIRouter(prefix="/api", tags=["review"])
 logger = logging.getLogger(__name__)
-
-client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 SYSTEM_PROMPT = load_system_prompt()
 
 RAG_ENABLED = os.getenv("RAG_ENABLED", "false").lower() == "true"
@@ -149,8 +148,7 @@ def review_document(
         )
 
         start = time.perf_counter()
-        response = client.messages.create(
-            model=MODEL,
+        response = call_anthropic(
             max_tokens=8192,
             system=SYSTEM_PROMPT,
             messages=[{"role": "user", "content": review_prompt}],

@@ -7,12 +7,11 @@ from datetime import datetime, timezone
 
 import anthropic
 
+from api_utils import call_anthropic
 from config import ANTHROPIC_API_KEY, MODEL
 from database import supabase_admin
 
 logger = logging.getLogger(__name__)
-
-client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 
 PARSE_PROMPT = """You are a Saudi CMA regulatory expert. Analyze this CMA publication and extract all compliance obligations.
 
@@ -63,8 +62,7 @@ def parse_circular(alert: dict) -> list[dict]:
     )
 
     try:
-        response = client.messages.create(
-            model=MODEL,
+        response = call_anthropic(
             max_tokens=4096,
             messages=[{"role": "user", "content": prompt}],
         )

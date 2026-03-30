@@ -2,18 +2,15 @@
 
 import logging
 
-import anthropic
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel
 
 from auth import get_current_user
-from config import ANTHROPIC_API_KEY, MODEL
+from api_utils import call_anthropic
 from database import supabase_admin
 
 router = APIRouter(prefix="/api", tags=["alerts"])
 logger = logging.getLogger(__name__)
-
-client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 
 
 class AlertOut(BaseModel):
@@ -52,8 +49,7 @@ Respond in both Arabic and English, Arabic first. Keep it concise."""
 def generate_impact_summary(alert: dict) -> str | None:
     """Generate an AI impact summary for a new CMA publication."""
     try:
-        response = client.messages.create(
-            model=MODEL,
+        response = call_anthropic(
             max_tokens=1024,
             messages=[
                 {

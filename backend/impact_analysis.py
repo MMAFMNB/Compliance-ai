@@ -10,13 +10,12 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from auth import get_current_user
+from api_utils import call_anthropic
 from config import ANTHROPIC_API_KEY, MODEL
 from database import supabase_admin
 
 router = APIRouter(prefix="/api", tags=["impact-analysis"])
 logger = logging.getLogger(__name__)
-
-client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 
 
 # ---------------------------------------------------------------------------
@@ -113,8 +112,7 @@ def create_impact_analysis(
 
     # Call Claude
     start = time.perf_counter()
-    response = client.messages.create(
-        model=MODEL,
+    response = call_anthropic(
         max_tokens=4096,
         messages=[{"role": "user", "content": prompt}],
     )

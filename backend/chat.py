@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 
 from auth import get_current_user
+from api_utils import call_anthropic, client
 from config import ANTHROPIC_API_KEY, MODEL, load_system_prompt
 from database import supabase_admin
 from models import ChatRequest, ChatResponse
@@ -15,8 +16,6 @@ from models import ChatRequest, ChatResponse
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api", tags=["chat"])
-
-client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 SYSTEM_PROMPT = load_system_prompt()
 
 MAX_CONTEXT_MESSAGES = 20
@@ -122,8 +121,7 @@ def chat(request: ChatRequest, user: dict = Depends(get_current_user)):
 
     start = time.perf_counter()
     try:
-        response = client.messages.create(
-            model=MODEL,
+        response = call_anthropic(
             max_tokens=4096,
             system=system_prompt,
             messages=messages,
