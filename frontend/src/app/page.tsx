@@ -133,7 +133,7 @@ export default function Home() {
         </header>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto" tabIndex={0} role="log" aria-label="Chat messages">
           {messages.length === 0 && !streamingContent ? (
             <WelcomeScreen onSuggestion={handleSend} />
           ) : (

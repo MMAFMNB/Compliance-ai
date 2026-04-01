@@ -20,6 +20,7 @@
     "react-markdown": "^9.0.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.1",
     "@playwright/test": "^1.59.0",
     "@types/node": "^20.0.0",
     "@types/react": "^18.3.0",

@@ -99,7 +99,7 @@ export default function Sidebar({
       </div>
 
       {/* Navigation */}
-      <nav className="px-3 space-y-1 mb-2 overflow-y-auto">
+      <nav className="px-3 space-y-1 mb-2 overflow-y-auto" tabIndex={0} aria-label="Main navigation">
         <NavItem
           icon={<MessageSquare size={16} />}
           label="الاستشارات التنظيمية"
@@ -186,7 +186,7 @@ export default function Sidebar({
       </nav>
 
       {/* Conversation History */}
-      <div className="flex-1 overflow-y-auto px-3 border-t border-white/10 pt-2">
+      <div className="flex-1 overflow-y-auto px-3 border-t border-white/10 pt-2" tabIndex={0} aria-label="Conversation history">
         <p className="text-[10px] text-white/40 px-1 mb-2">المحادثات السابقة</p>
         {conversations.length === 0 ? (
           <p className="text-[10px] text-white/20 px-1">لا توجد محادثات</p>

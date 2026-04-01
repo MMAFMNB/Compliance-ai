@@ -56,6 +56,7 @@ export default function ChatInput({ onSend, isLoading }: ChatInputProps) {
           <button
             onClick={handleSubmit}
             disabled={!input.trim() || isLoading}
+            aria-label={isLoading ? "Sending message" : "Send message"}
             className="flex-shrink-0 w-9 h-9 rounded-lg bg-tam-primary text-white flex items-center justify-center hover:bg-tam-secondary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             {isLoading ? (
