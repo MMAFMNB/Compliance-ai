@@ -1,0 +1,214 @@
+# Product Requirements Document
+# TAM Compliance AI — CMA-Regulated Compliance Intelligence Platform
+# Version 1.0 | Author: Mohammed Malki (COO/CDO, TAM Capital)
+
+---
+
+## 1. PROJECT OVERVIEW
+
+### 1.1 Product Vision
+TAM Compliance AI is an intelligent compliance management platform purpose-built for CMA-regulated financial firms in Saudi Arabia. It combines AI-powered document generation, regulatory intelligence, and workflow automation to help compliance officers manage obligations, reduce manual work, and maintain audit-readiness — all in Arabic and English.
+
+### 1.2 Target Users
+- Primary: Compliance Officers at CMA-licensed firms (first user: TAM Capital's compliance officer)
+- Secondary: Risk Analysts, Internal Auditors, C-Suite reviewers
+- Admin: Super Admin (Mohammed Malki), Firm Admins
+
+### 1.3 Tech Stack (Existing)
+- Backend: Python FastAPI, deployed on Railway
+- Frontend: Next.js 14 + TypeScript + Tailwind CSS
+- Auth & Database: Supabase
+- AI: Anthropic Claude API with RAG pipeline (rag.py)
+- Scraper: regulatory content ingestion (scraper.py)
+- Document Generation: docgen.py
+- Ingest pipeline: ingest.py
+
+### 1.4 Existing Codebase State
+The following backend modules exist but have NOT been tested end-to-end:
+- calendar_routes.py — Compliance calendar & deadlines
+- docgen.py — Document generator
+- impact_analysis.py — Regulatory change impact analysis
+- checklist.py — Compliance checklist & gap analysis
+- self_assessment.py — Periodic self-assessment
+- review.py — Document review
+- search.py — Regulatory search
+- scraper.py — Web scraper for regulatory content
+- rag.py — RAG pipeline
+- ingest.py — Document ingestion
+- chat.py + conversations.py — AI chat interface
+- auth.py + auth_routes.py — Authentication
+- alerts.py — Alerts system
+- dashboard.py — Dashboard
+
+Frontend pages exist for: alerts, calendar, checklist, dashboard, docgen, impact-analysis, login, review, search, self-assessment.
+
+---
+
+## 2. PHASED DELIVERY PLAN
+
+---
+
+### PHASE 0 — Stabilization & Testing (Priority: CRITICAL)
+**Goal:** Get all existing features working end-to-end before building anything new.
+
+#### Tasks:
+- Set up local development environment (backend + frontend running together)
+- Configure .env files from .env.example for both backend and frontend
+- Test auth flow: login, session management, logout
+- Test Compliance Calendar: create deadline, edit, delete, view
+- Test Document Generator: generate a sample compliance document end-to-end
+- Test Impact Analysis: input a regulatory change, view output
+- Test Compliance Checklist: create checklist, mark items, view gap analysis
+- Test Self-Assessment: complete a self-assessment form, view results
+- Test Alerts: verify alerts are triggered and displayed
+- Test Dashboard: verify data loads correctly
+- Test Search: verify regulatory search returns results
+- Fix all bugs found during testing
+- Write a TESTING.md file documenting what works
+
+**Acceptance Criteria:** All 5 core features are functional end-to-end with no crashes.
+
+---
+
+### PHASE 1 — Back Office Admin Panel
+**Goal:** Super Admin and Firm Admin can manage users, roles, and view usage.
+
+#### Tasks:
+- Design admin data model: SuperAdmin > FirmAdmin > User with roles (compliance_officer, analyst, auditor, read_only)
+- Create Supabase tables: firms, firm_users, roles, audit_log, usage_events
+- Build backend admin routes: CRUD for firms, users, roles
+- Build Super Admin dashboard: list firms, create firm, deactivate firm
+- Build Firm Admin dashboard: list users, invite user, assign role, deactivate user
+- Build usage tracking: log every query, document generated, alert triggered per user
+- Build consumption dashboard: queries per user, documents generated, monthly usage
+- Build full audit log: who did what, when, from which IP
+- Add role-based access control (RBAC) middleware to all existing routes
+- Frontend: /admin route with Super Admin panel
+- Frontend: /firm-admin route with Firm Admin panel
+- Bilingual UI: all admin pages in Arabic and English
+
+**Acceptance Criteria:** Super Admin can create a firm, add users, assign roles, and view usage. All actions are logged.
+
+---
+
+### PHASE 2 — Regulatory Intelligence Engine
+**Goal:** System automatically ingests CMA circulars, extracts obligations, and assigns tasks.
+
+#### Tasks:
+- Build CMA circular scraper: monitor cma.org.sa for new publications
+- Build circular parser: extract obligations, deadlines, affected departments from each circular
+- Build obligation tracker: map circulars to internal tasks with owners and due dates
+- Build impact analysis engine: "this circular affects these 3 existing policies"
+- Build gap analysis: compare current firm policies vs regulatory requirements
+- Build notification system: alert compliance officer when new circular is published
+- Build regulatory knowledge base: all CMA circulars indexed and searchable via RAG
+- Frontend: Regulatory Intelligence dashboard showing pending obligations
+- Frontend: Circular detail page showing extracted obligations and assigned tasks
+- Bilingual output: all extracted content in Arabic and English
+
+**Acceptance Criteria:** When a new CMA circular is published, the system detects it, extracts obligations, and creates tasks within 24 hours.
+
+---
+
+### PHASE 3 — Bilingual Document Generation (TAM-Branded)
+**Goal:** Generate production-quality compliance documents in Arabic and English, branded to the firm.
+
+#### Tasks:
+- Upgrade docgen.py to support bilingual (AR/EN) document output
+- Build document templates: CMA periodic reports, board pack compliance sections, client disclosure docs, internal policy templates, STR (Suspicious Transaction Report), AML case documentation, Sharia compliance attestations
+- Build document approval workflow: draft → review → approved → archived
+- Add document versioning: track changes between versions
+- Build document library: searchable archive of all generated documents
+- Add firm branding: logo, colors, header/footer per firm
+- Frontend: Document Generator with template picker, bilingual preview, download (PDF + DOCX)
+- Frontend: Document Library with filters, search, version history
+
+**Acceptance Criteria:** Compliance officer can generate a CMA-compliant document in both Arabic and English in under 2 minutes.
+
+---
+
+### PHASE 4 — Interaction Logging & Feedback Pipeline (ML Foundation)
+**Goal:** Log all user interactions and create a feedback loop for continuous improvement.
+
+#### Tasks:
+- Build interaction logging service: capture every query, document generated, alert action, checklist completion
+- Build feedback model: user can mark AI output as approved / needs edit / rejected
+- Build correction capture: when user edits AI output, log the original + edited version
+- Build feedback dashboard (admin): view feedback trends, most-corrected outputs, top queries
+- Build document quality scoring: track approval rate per document type
+- Build alert relevance scoring: track which alerts are acted on vs dismissed
+- Store all logged data in structured format ready for future fine-tuning
+- Build data export: compliance officer can export interaction logs for audit
+
+**Acceptance Criteria:** Every AI interaction is logged with feedback captured. Admin can view aggregated feedback trends.
+
+---
+
+### PHASE 5 — AML/CFT Case Management & Suitability
+**Goal:** Full AML workflow and client suitability documentation.
+
+#### Tasks:
+- Build AML case management: create case, add evidence, track status, escalate
+- Build STR (Suspicious Transaction Report) generator: AI drafts STR from case data
+- Build suitability assessment: document client risk profile, investment suitability
+- Build watchlist screening: check client names against sanctions lists
+- Build AML audit trail: full history of every case action
+- Frontend: AML Case Manager with case list, detail, timeline, document attachment
+- Frontend: Suitability Assessment form with scoring and PDF output
+- Bilingual: all AML outputs in Arabic and English
+
+**Acceptance Criteria:** Compliance officer can open an AML case, add evidence, and generate a complete STR in both languages.
+
+---
+
+### PHASE 6 — Adaptive Learning (ML Fine-tuning)
+**Goal:** System learns from firm-specific interactions and improves over time.
+
+#### Tasks:
+- Build fine-tuning data pipeline: export interaction logs in training format
+- Implement retrieval-augmented generation (RAG) improvements based on feedback data
+- Build firm-specific knowledge base: documents, policies, previous decisions per firm
+- Build adaptive system prompt: update system prompt based on learned firm preferences
+- Build accuracy tracking: measure output quality over time, show improvement trends
+- Build learning dashboard: show compliance officer how the system is improving
+
+**Acceptance Criteria:** After 3 months of usage, document approval rate improves by at least 20% compared to baseline.
+
+---
+
+## 3. NON-FUNCTIONAL REQUIREMENTS
+
+### Security
+- All data encrypted at rest and in transit
+- Role-based access control on every API endpoint
+- Full audit log for all actions (required by CMA)
+- No client data shared between firms (strict multi-tenancy)
+
+### Compliance
+- All generated documents include required CMA disclaimers
+- Bilingual support (Arabic RTL + English LTR) on all user-facing pages
+- Document retention policy configurable per firm
+
+### Performance
+- API response time < 2 seconds for standard queries
+- Document generation < 30 seconds
+- Support up to 50 concurrent users per firm
+
+### Deployment
+- Backend: Railway (existing)
+- Frontend: Vercel or Railway
+- Database: Supabase (existing)
+
+---
+
+## 4. SUCCESS METRICS
+
+| Metric | Target |
+|--------|--------|
+| Phase 0 complete | All 5 features tested and working |
+| Phase 1 complete | Admin panel live, TAM compliance officer onboarded |
+| Internal Beta (Phases 0-1) | 4-6 weeks from start |
+| Production Ready (Phases 0-4) | 4-5 months from start |
+| Full Platform (All Phases) | 8-9 months from start |
+| Document approval rate | >80% without edits |
+| Time to generate STR | <5 minutes vs 2+ hours manually |

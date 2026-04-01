@@ -109,9 +109,8 @@ def get_current_user(
     return {
         "id": user_id,
         "email": payload.get("email", ""),
-        "name": "",
-        "organization": "",
+        "full_name": "",
         "role": "compliance_officer",
         "firm_id": None,
-        "language_pref": "ar",
+        "language_preference": "ar",
     }

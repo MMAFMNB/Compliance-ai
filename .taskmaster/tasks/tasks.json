@@ -1,0 +1,153 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": "1",
+        "title": "Environment Setup and Configuration",
+        "description": "Set up local development environment with backend (FastAPI/Railway) and frontend (Next.js) running together, configure all environment variables from .env.example files",
+        "details": "1. Clone both backend and frontend repositories\n2. Install dependencies:\n   - Backend: `pip install -r requirements.txt`\n   - Frontend: `npm install`\n3. Configure .env files:\n   - Backend: Copy .env.example to .env, set SUPABASE_URL, SUPABASE_KEY, ANTHROPIC_API_KEY\n   - Frontend: Copy .env.example to .env.local, set NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, NEXT_PUBLIC_API_URL\n4. Start services:\n   - Backend: `uvicorn main:app --reload --port 8000`\n   - Frontend: `npm run dev`\n5. Verify connectivity between frontend and backend\n6. Document any missing dependencies or configuration issues",
+        "testStrategy": "Verify both services start without errors, frontend can make API calls to backend, Supabase connection works, and Anthropic API key is valid by making a test call",
+        "priority": "high",
+        "dependencies": [],
+        "status": "done",
+        "subtasks": [],
+        "updatedAt": "2026-03-30T13:51:17.169Z"
+      },
+      {
+        "id": "2",
+        "title": "Authentication Flow Testing and Fixes",
+        "description": "Test and fix the complete authentication flow including login, session management, and logout using existing auth.py and auth_routes.py modules",
+        "details": "1. Test login flow:\n   - POST /auth/login with email/password\n   - Verify JWT token generation\n   - Check Supabase session creation\n2. Test session management:\n   - Verify token validation middleware\n   - Check token refresh mechanism\n   - Test protected route access\n3. Test logout:\n   - POST /auth/logout\n   - Verify session cleanup\n4. Fix any issues found:\n   - Update auth middleware if needed\n   - Fix CORS issues between frontend/backend\n   - Ensure proper error handling\n5. Update frontend auth context to handle all states",
+        "testStrategy": "Create test user in Supabase, perform full login/logout cycle, verify protected routes return 401 without token, verify token refresh works after expiry",
+        "priority": "high",
+        "dependencies": [
+          "1"
+        ],
+        "status": "done",
+        "subtasks": [],
+        "updatedAt": "2026-03-30T14:08:48.675Z"
+      },
+      {
+        "id": "3",
+        "title": "Core Features End-to-End Testing",
+        "description": "Systematically test all 5 core features (Calendar, Document Generator, Impact Analysis, Checklist, Self-Assessment) and fix bugs",
+        "details": "1. Compliance Calendar (calendar_routes.py):\n   - Create deadline: POST /calendar/deadlines\n   - Edit deadline: PUT /calendar/deadlines/{id}\n   - Delete: DELETE /calendar/deadlines/{id}\n   - List: GET /calendar/deadlines\n2. Document Generator (docgen.py):\n   - Generate document: POST /documents/generate\n   - Test with sample compliance template\n   - Verify PDF/DOCX output\n3. Impact Analysis (impact_analysis.py):\n   - Analyze change: POST /impact-analysis/analyze\n   - Test with sample regulatory text\n4. Checklist (checklist.py):\n   - Create: POST /checklists\n   - Update items: PUT /checklists/{id}/items\n   - Gap analysis: GET /checklists/{id}/gaps\n5. Self-Assessment (self_assessment.py):\n   - Create: POST /self-assessments\n   - Submit: POST /self-assessments/{id}/submit\n   - View results: GET /self-assessments/{id}/results\n6. Fix all discovered bugs and update error handling",
+        "testStrategy": "Create automated test suite using pytest for backend APIs, manual testing for frontend flows, document all bugs found and fixes applied",
+        "priority": "high",
+        "dependencies": [
+          "2"
+        ],
+        "status": "done",
+        "subtasks": [],
+        "updatedAt": "2026-03-30T14:19:20.537Z"
+      },
+      {
+        "id": "4",
+        "title": "Admin Data Model and Database Schema",
+        "description": "Design and implement the complete admin data model in Supabase with proper relationships for SuperAdmin, FirmAdmin, and User roles",
+        "details": "1. Create Supabase tables using SQL migrations:\n```sql\n-- Firms table\nCREATE TABLE firms (\n  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n  name VARCHAR(255) NOT NULL,\n  name_ar VARCHAR(255),\n  cma_license VARCHAR(100),\n  is_active BOOLEAN DEFAULT true,\n  created_at TIMESTAMPTZ DEFAULT NOW()\n);\n\n-- Roles enum\nCREATE TYPE user_role AS ENUM ('super_admin', 'firm_admin', 'compliance_officer', 'analyst', 'auditor', 'read_only');\n\n-- Users extension\nALTER TABLE auth.users ADD COLUMN firm_id UUID REFERENCES firms(id);\nALTER TABLE auth.users ADD COLUMN role user_role DEFAULT 'read_only';\n\n-- Audit log\nCREATE TABLE audit_log (\n  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n  user_id UUID REFERENCES auth.users(id),\n  action VARCHAR(100),\n  resource_type VARCHAR(50),\n  resource_id UUID,\n  ip_address INET,\n  user_agent TEXT,\n  created_at TIMESTAMPTZ DEFAULT NOW()\n);\n\n-- Usage events\nCREATE TABLE usage_events (\n  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n  user_id UUID REFERENCES auth.users(id),\n  firm_id UUID REFERENCES firms(id),\n  event_type VARCHAR(50),\n  metadata JSONB,\n  created_at TIMESTAMPTZ DEFAULT NOW()\n);\n```\n2. Set up Row Level Security (RLS) policies\n3. Create database functions for role checks\n4. Add indexes for performance",
+        "testStrategy": "Run migrations in test environment, verify foreign key constraints work, test RLS policies prevent cross-firm data access, verify cascade deletes work properly",
+        "priority": "high",
+        "dependencies": [
+          "3"
+        ],
+        "status": "done",
+        "subtasks": [],
+        "updatedAt": "2026-03-30T14:30:08.329Z"
+      },
+      {
+        "id": "5",
+        "title": "Backend Admin Routes and RBAC Middleware",
+        "description": "Build comprehensive admin API routes with role-based access control middleware to manage firms, users, and track usage",
+        "details": "1. Create admin_routes.py with endpoints:\n```python\n# Super Admin routes\n@router.post('/admin/firms')\nasync def create_firm(firm: FirmCreate, user: User = Depends(require_super_admin)):\n    # Create firm logic\n\n@router.get('/admin/firms')\nasync def list_firms(user: User = Depends(require_super_admin)):\n    # List all firms\n\n@router.put('/admin/firms/{firm_id}/deactivate')\nasync def deactivate_firm(firm_id: UUID, user: User = Depends(require_super_admin)):\n    # Deactivate firm\n\n# Firm Admin routes\n@router.post('/admin/users/invite')\nasync def invite_user(invite: UserInvite, user: User = Depends(require_firm_admin)):\n    # Send invitation email\n\n@router.put('/admin/users/{user_id}/role')\nasync def update_user_role(user_id: UUID, role: UserRole, user: User = Depends(require_firm_admin)):\n    # Update user role\n\n# Usage tracking\n@router.get('/admin/usage/summary')\nasync def usage_summary(user: User = Depends(require_admin)):\n    # Return usage statistics\n```\n2. Implement RBAC middleware:\n```python\ndef require_role(allowed_roles: List[UserRole]):\n    async def role_checker(user: User = Depends(get_current_user)):\n        if user.role not in allowed_roles:\n            raise HTTPException(403, 'Insufficient permissions')\n        return user\n    return role_checker\n```\n3. Add audit logging decorator\n4. Implement usage tracking middleware",
+        "testStrategy": "Test each endpoint with different user roles, verify 403 errors for unauthorized access, verify audit logs are created for all admin actions",
+        "priority": "high",
+        "dependencies": [
+          "4"
+        ],
+        "status": "done",
+        "subtasks": [],
+        "updatedAt": "2026-03-30T14:37:33.089Z"
+      },
+      {
+        "id": "6",
+        "title": "Admin Frontend Panels",
+        "description": "Build bilingual (Arabic/English) admin panels for Super Admin and Firm Admin with full user and firm management capabilities",
+        "details": "1. Create /admin route for Super Admin:\n```typescript\n// pages/admin/index.tsx\n- Firms list with DataTable component\n- Create firm modal with bilingual form\n- Firm details page with users list\n- Usage dashboard with charts (Chart.js)\n```\n2. Create /firm-admin route for Firm Admin:\n```typescript\n// pages/firm-admin/index.tsx\n- Users list with role badges\n- Invite user form with email validation\n- User detail page with activity log\n- Role management dropdown\n```\n3. Implement bilingual support:\n```typescript\n// i18n/admin.ts\nexport const adminTranslations = {\n  en: {\n    firms: 'Firms',\n    createFirm: 'Create Firm',\n    users: 'Users',\n    inviteUser: 'Invite User'\n  },\n  ar: {\n    firms: 'الشركات',\n    createFirm: 'إنشاء شركة',\n    users: 'المستخدمون',\n    inviteUser: 'دعوة مستخدم'\n  }\n}\n```\n4. Add RTL support for Arabic\n5. Implement responsive design with Tailwind CSS",
+        "testStrategy": "Test UI in both languages, verify RTL layout works correctly, test all CRUD operations through UI, verify proper error handling and loading states",
+        "priority": "medium",
+        "dependencies": [
+          "5"
+        ],
+        "status": "done",
+        "subtasks": [],
+        "updatedAt": "2026-03-30T14:42:15.531Z"
+      },
+      {
+        "id": "7",
+        "title": "CMA Circular Scraper and Parser",
+        "description": "Build automated scraper for cma.org.sa to monitor and ingest new circulars, extract obligations and deadlines using AI",
+        "details": "1. Enhance scraper.py for CMA website:\n```python\nimport asyncio\nfrom bs4 import BeautifulSoup\nimport httpx\n\nclass CMAScaper:\n    async def scrape_circulars(self):\n        # Monitor https://cma.org.sa/RulesRegulations/Circulars\n        # Extract circular metadata (number, date, title)\n        # Download PDF/HTML content\n        # Store in database with status 'pending_analysis'\n```\n2. Build circular parser using Claude API:\n```python\nclass CircularParser:\n    async def parse_circular(self, content: str):\n        prompt = '''\n        Extract from this CMA circular:\n        1. Key obligations and requirements\n        2. Deadlines and timelines\n        3. Affected departments/roles\n        4. Required actions\n        Return structured JSON\n        '''\n        # Call Claude API with RAG context\n        # Extract obligations in Arabic and English\n```\n3. Create scheduled job to run scraper daily\n4. Store parsed data in regulatory_obligations table\n5. Trigger notifications for new circulars",
+        "testStrategy": "Test with historical CMA circulars, verify parser extracts correct obligations, test scheduled job runs reliably, verify duplicate detection works",
+        "priority": "medium",
+        "dependencies": [
+          "6"
+        ],
+        "status": "done",
+        "subtasks": [],
+        "updatedAt": "2026-03-30T14:47:38.422Z"
+      },
+      {
+        "id": "8",
+        "title": "Regulatory Intelligence Dashboard",
+        "description": "Build comprehensive regulatory intelligence dashboard showing pending obligations, impact analysis, and task assignments",
+        "details": "1. Create regulatory intelligence API endpoints:\n```python\n@router.get('/regulatory/obligations/pending')\nasync def get_pending_obligations():\n    # Return obligations grouped by deadline\n\n@router.post('/regulatory/obligations/{id}/assign')\nasync def assign_obligation(id: UUID, assignment: TaskAssignment):\n    # Assign obligation to user with deadline\n\n@router.post('/regulatory/impact-analysis')\nasync def analyze_circular_impact(circular_id: UUID):\n    # Run impact analysis against existing policies\n```\n2. Build frontend dashboard:\n```typescript\n// pages/regulatory-intelligence/index.tsx\n- Pending obligations timeline view\n- Circular list with status badges\n- Impact analysis results panel\n- Task assignment modal\n- Gap analysis visualization\n```\n3. Implement real-time updates using Supabase subscriptions\n4. Add filtering by department, deadline, status\n5. Export functionality for compliance reports",
+        "testStrategy": "Test with sample circulars, verify obligations are correctly displayed, test task assignment workflow, verify real-time updates work",
+        "priority": "medium",
+        "dependencies": [
+          "7"
+        ],
+        "status": "done",
+        "subtasks": [],
+        "updatedAt": "2026-03-30T14:54:37.738Z"
+      },
+      {
+        "id": "9",
+        "title": "Enhanced Bilingual Document Generation",
+        "description": "Upgrade document generation to support production-quality bilingual output with TAM branding and approval workflow",
+        "details": "1. Enhance docgen.py for bilingual support:\n```python\nclass BilingualDocGenerator:\n    async def generate_document(self, template: str, data: dict, languages: List[str]):\n        # Generate content in requested languages\n        # Use parallel Claude API calls for AR/EN\n        # Merge into single document with proper formatting\n```\n2. Create document templates:\n   - CMA periodic reports\n   - Board pack compliance sections\n   - Client disclosure documents\n   - STR templates\n   - AML case documentation\n   - Sharia compliance attestations\n3. Implement approval workflow:\n```python\nclass DocumentWorkflow:\n    states = ['draft', 'pending_review', 'approved', 'archived']\n    \n    async def submit_for_review(self, doc_id: UUID):\n        # Move to pending_review, notify reviewers\n    \n    async def approve_document(self, doc_id: UUID, approver_id: UUID):\n        # Approve with timestamp and approver info\n```\n4. Add firm branding configuration\n5. Implement version control with diff viewing",
+        "testStrategy": "Generate sample documents in both languages, verify Arabic RTL formatting, test approval workflow with multiple reviewers, verify branding appears correctly",
+        "priority": "low",
+        "dependencies": [
+          "8"
+        ],
+        "status": "done",
+        "subtasks": [],
+        "updatedAt": "2026-03-30T15:02:38.803Z"
+      },
+      {
+        "id": "10",
+        "title": "Comprehensive Interaction Logging System",
+        "description": "Build interaction logging service to capture all user actions with feedback mechanism for future ML training",
+        "details": "1. Create interaction logging middleware:\n```python\nclass InteractionLogger:\n    async def log_interaction(self, request: Request, response: Response):\n        interaction = {\n            'user_id': request.state.user.id,\n            'endpoint': request.url.path,\n            'method': request.method,\n            'request_body': await request.json() if request.method == 'POST' else None,\n            'response_status': response.status_code,\n            'timestamp': datetime.utcnow(),\n            'session_id': request.state.session_id\n        }\n        await save_to_usage_events(interaction)\n```\n2. Build feedback capture system:\n```python\n@router.post('/feedback')\nasync def submit_feedback(feedback: Feedback):\n    # feedback.rating: approved/needs_edit/rejected\n    # feedback.original_output\n    # feedback.edited_output (if applicable)\n    # feedback.comments\n```\n3. Create feedback dashboard:\n   - Aggregate feedback by feature\n   - Show approval rates over time\n   - Identify most-corrected outputs\n   - Export data for ML training\n4. Implement data retention policies\n5. Build privacy-compliant export functionality",
+        "testStrategy": "Verify all API calls are logged, test feedback submission flow, verify dashboard aggregations are accurate, test data export formats for ML compatibility",
+        "priority": "low",
+        "dependencies": [
+          "9"
+        ],
+        "status": "done",
+        "subtasks": [],
+        "updatedAt": "2026-03-30T15:10:38.859Z"
+      }
+    ],
+    "metadata": {
+      "version": "1.0.0",
+      "lastModified": "2026-03-30T15:10:38.861Z",
+      "taskCount": 10,
+      "completedCount": 10,
+      "tags": [
+        "master"
+      ]
+    }
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(task-master list:*)",
+      "Bash(task-master show:*)",
+      "Bash(task-master set-status:*)",
+      "Bash(python -m venv venv)",
+      "Bash(npm install:*)",
+      "Bash(./venv/Scripts/pip install:*)",
+      "Bash(./venv/Scripts/python -c \"import fastapi, uvicorn, anthropic, supabase, sentence_transformers; print\\(''All backend dependencies OK''\\)\")",
+      "Bash(curl -s -H \"apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRnZ3RoZXNvZm5xZGlkand2d2diIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3MDEzNjMsImV4cCI6MjA5MDI3NzM2M30.8eMMAjkYYjXWMgg64Vuil3V-llwGOQpHUVKF0bzD-2c\" \"https://tggthesofnqdidjwvwgb.supabase.co/rest/v1/\")",
+      "Bash(taskkill //F //IM uvicorn.exe)",
+      "Bash(taskkill //F //IM node.exe)",
+      "Bash(cp:*)",
+      "Read(//c/Users/Mmalki/OneDrive - TAM Capital/Documents/Claude//**)",
+      "Read(//c/Users/Mmalki/OneDrive - TAM Capital/Documents//**)",
+      "Read(//c/Users/Mmalki/OneDrive - TAM Capital//**)",
+      "Bash(npx next:*)",
+      "Bash(python -c \"from main import app; print\\(''''FastAPI app loaded successfully''''\\); print\\(''''Routes:''''\\); [print\\(f''''  {r.methods} {r.path}''''\\) for r in app.routes if hasattr\\(r, ''''methods''''\\)]\")"
+    ]
+  }
+}

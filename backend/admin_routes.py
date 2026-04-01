@@ -286,11 +286,10 @@ def invite_user(
         supabase_admin.table("users").insert({
             "id": auth_user.id,
             "email": body.email,
-            "name": body.name,
-            "organization": "",
+            "full_name": body.name,
             "role": body.role,
             "firm_id": firm_id,
-            "language_pref": "ar",
+            "language_preference": "ar",
         }).execute()
     except Exception:
         logger.exception("Failed to create profile for invited user")

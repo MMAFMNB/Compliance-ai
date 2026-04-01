@@ -37,9 +37,8 @@ def signup(request: SignUpRequest):
             {
                 "id": auth_response.user.id,
                 "email": request.email,
-                "name": request.name,
-                "organization": request.organization,
-                "language_pref": request.language_pref.value,
+                "full_name": request.name,
+                "language_preference": request.language_pref.value,
             }
         ).execute()
     except Exception:
@@ -67,9 +66,8 @@ def create_profile(request: CreateProfileRequest):
             {
                 "id": request.user_id,
                 "email": request.email,
-                "name": request.name,
-                "organization": request.organization,
-                "language_pref": request.language_pref.value,
+                "full_name": request.name,
+                "language_preference": request.language_pref.value,
             }
         ).execute()
     except Exception:
