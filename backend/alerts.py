@@ -163,9 +163,11 @@ def trigger_processing(user: dict = Depends(get_current_user)):
 
 @router.post("/alerts/scrape")
 def trigger_scrape(user: dict = Depends(get_current_user)):
-    """Run the full CMA scraper pipeline: scrape, summarize, and parse."""
+    """Run the full CMA scraper pipeline: scrape, summarize, parse, and sync deadlines."""
     from scraper import run_scraper
+    from scheduler import sync_obligations_to_deadlines
     result = run_scraper(parse_circulars=True)
+    result["deadlines_added"] = sync_obligations_to_deadlines()
     return result
 
 

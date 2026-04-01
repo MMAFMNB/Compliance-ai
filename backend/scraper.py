@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 CMA_BASE_URL = "https://cma.gov.sa"
 CMA_NEWS_URL_EN = f"{CMA_BASE_URL}/en/MediaCenter/NEWS/Pages/default.aspx"
 CMA_CIRCULARS_URL_EN = f"{CMA_BASE_URL}/en/RulesRegulations/CMACirculars/Pages/default.aspx"
-CMA_NEWS_URL_AR = f"{CMA_BASE_URL}/ar/MediaCenter/NEWS/Pages/default.aspx"
+CMA_REGULATIONS_URL_EN = f"{CMA_BASE_URL}/en/RulesRegulations/Regulations/Pages/default.aspx"
 
 REQUEST_TIMEOUT = 30
 USER_AGENT = "TAM-Compliance-AI/1.0 (+https://tam.capital)"
@@ -38,7 +38,14 @@ def _fetch_page(url: str) -> str | None:
 
 def _parse_date(date_str: str) -> str | None:
     """Try to parse a date string into YYYY-MM-DD format."""
-    for fmt in ("%d/%m/%Y", "%Y-%m-%d", "%d-%m-%Y", "%B %d, %Y", "%d %B %Y"):
+    for fmt in (
+        "%d-%B-%Y",      # 31-March-2026
+        "%d %B %Y",      # 31 March 2026
+        "%B %d, %Y",     # March 31, 2026
+        "%d/%m/%Y",
+        "%Y-%m-%d",
+        "%d-%m-%Y",
+    ):
         try:
             return datetime.strptime(date_str.strip(), fmt).strftime("%Y-%m-%d")
         except ValueError:
@@ -64,7 +71,11 @@ def _is_already_tracked(source_url: str) -> bool:
 def scrape_cma_news() -> list[dict]:
     """Scrape the CMA English news page for new publications.
 
-    Returns a list of new items not yet in the alerts table.
+    The CMA news page uses card-based layout with:
+    - <div data-id="..."> as card containers
+    - <h3> for titles
+    - <span class="date"> for publication dates
+    - <a href="/en/MediaCenter/NEWS/Pages/CMA_N_XXXX.aspx"> for detail links
     """
     html = _fetch_page(CMA_NEWS_URL_EN)
     if not html:
@@ -73,15 +84,19 @@ def scrape_cma_news() -> list[dict]:
     soup = BeautifulSoup(html, "html.parser")
     new_items = []
 
-    # CMA news items are typically in list elements with links
-    for link in soup.select("a[href*='/NEWS/']"):
-        href = link.get("href", "")
-        title = link.get_text(strip=True)
-
+    for card in soup.select("[data-id]"):
+        h3 = card.select_one("h3")
+        if not h3:
+            continue
+        title = h3.get_text(strip=True)
         if not title or len(title) < 10:
             continue
 
-        # Build full URL
+        # Find the detail link
+        link = card.select_one("a[href*='/NEWS/Pages/CMA_N_']")
+        if not link:
+            continue
+        href = link.get("href", "")
         if href.startswith("/"):
             source_url = f"{CMA_BASE_URL}{href}"
         elif href.startswith("http"):
@@ -92,17 +107,12 @@ def scrape_cma_news() -> list[dict]:
         if _is_already_tracked(source_url):
             continue
 
-        # Try to extract date from nearby elements
-        parent = link.parent
-        date_text = ""
-        if parent:
-            date_el = parent.find(string=re.compile(r"\d{1,2}[/-]\d{1,2}[/-]\d{2,4}"))
-            if date_el:
-                date_text = date_el.strip()
+        # Extract date
+        date_el = card.select_one("span.date, .date")
+        publication_date = None
+        if date_el:
+            publication_date = _parse_date(date_el.get_text(strip=True))
 
-        publication_date = _parse_date(date_text) if date_text else None
-
-        # Classify the document type
         doc_type = _classify_doc_type(title)
 
         new_items.append({
@@ -124,13 +134,19 @@ def scrape_cma_circulars() -> list[dict]:
     soup = BeautifulSoup(html, "html.parser")
     new_items = []
 
-    for link in soup.select("a[href*='Circular'], a[href*='.pdf']"):
-        href = link.get("href", "")
-        title = link.get_text(strip=True)
-
+    # Try card-based layout first (same as news)
+    for card in soup.select("[data-id]"):
+        h3 = card.select_one("h3")
+        if not h3:
+            continue
+        title = h3.get_text(strip=True)
         if not title or len(title) < 10:
             continue
 
+        link = card.select_one("a[href]")
+        if not link:
+            continue
+        href = link.get("href", "")
         if href.startswith("/"):
             source_url = f"{CMA_BASE_URL}{href}"
         elif href.startswith("http"):
@@ -141,11 +157,92 @@ def scrape_cma_circulars() -> list[dict]:
         if _is_already_tracked(source_url):
             continue
 
+        date_el = card.select_one("span.date, .date")
+        publication_date = _parse_date(date_el.get_text(strip=True)) if date_el else None
+
         new_items.append({
             "title_en": title,
             "source_url": source_url,
-            "publication_date": None,
+            "publication_date": publication_date,
             "doc_type": "circular",
+        })
+
+    # Fallback: look for direct PDF links
+    if not new_items:
+        for link in soup.select("a[href*='Circular'], a[href*='.pdf']"):
+            href = link.get("href", "")
+            title = link.get_text(strip=True)
+            if not title or len(title) < 10:
+                continue
+            if href.startswith("/"):
+                source_url = f"{CMA_BASE_URL}{href}"
+            elif href.startswith("http"):
+                source_url = href
+            else:
+                continue
+            if _is_already_tracked(source_url):
+                continue
+            new_items.append({
+                "title_en": title,
+                "source_url": source_url,
+                "publication_date": None,
+                "doc_type": "circular",
+            })
+
+    return new_items
+
+
+def scrape_cma_regulations() -> list[dict]:
+    """Scrape the CMA regulations page for regulation documents and PDFs.
+
+    The regulations page has cards with:
+    - <h3> for regulation titles
+    - <a href="...pdf"> for direct PDF downloads
+    - <span class="date"> for dates
+    """
+    html = _fetch_page(CMA_REGULATIONS_URL_EN)
+    if not html:
+        return []
+
+    soup = BeautifulSoup(html, "html.parser")
+    new_items = []
+
+    for card in soup.select("[data-id]"):
+        h3 = card.select_one("h3")
+        if not h3:
+            continue
+        title = h3.get_text(strip=True)
+        if not title or len(title) < 10:
+            continue
+
+        # Find the best link — prefer PDF, fallback to any link
+        pdf_link = card.select_one("a[href*='.pdf']")
+        any_link = card.select_one("a[href]")
+        link = pdf_link or any_link
+        if not link:
+            continue
+
+        href = link.get("href", "")
+        if href.startswith("/"):
+            source_url = f"{CMA_BASE_URL}{href}"
+        elif href.startswith("http"):
+            source_url = href
+        else:
+            continue
+
+        if _is_already_tracked(source_url):
+            continue
+
+        date_el = card.select_one("span.date, .date")
+        publication_date = _parse_date(date_el.get_text(strip=True)) if date_el else None
+
+        doc_type = _classify_doc_type(title)
+
+        new_items.append({
+            "title_en": title,
+            "source_url": source_url,
+            "publication_date": publication_date,
+            "doc_type": doc_type,
         })
 
     return new_items
@@ -154,15 +251,17 @@ def scrape_cma_circulars() -> list[dict]:
 def _classify_doc_type(title: str) -> str:
     """Classify a publication by its title."""
     title_lower = title.lower()
-    if "circular" in title_lower or "\u062a\u0639\u0645\u064a\u0645" in title:
+    if "circular" in title_lower or "تعميم" in title:
         return "circular"
-    if "amend" in title_lower or "\u062a\u0639\u062f\u064a\u0644" in title:
+    if "amend" in title_lower or "تعديل" in title:
         return "amendment"
-    if "regulation" in title_lower or "\u0644\u0627\u0626\u062d\u0629" in title:
+    if any(w in title_lower for w in ("regulation", "rules", "instructions", "law")):
         return "regulation"
-    if "guidance" in title_lower or "\u062f\u0644\u064a\u0644" in title:
+    if "regulation" in title_lower or "لائحة" in title:
+        return "regulation"
+    if "guidance" in title_lower or "دليل" in title:
         return "guidance"
-    if "faq" in title_lower or "\u0623\u0633\u0626\u0644\u0629" in title:
+    if "faq" in title_lower or "أسئلة" in title:
         return "faq"
     return "other"
 
@@ -191,7 +290,7 @@ def save_alerts(items: list[dict]) -> int:
 def run_scraper(parse_circulars: bool = True) -> dict:
     """Run the full CMA scraper pipeline.
 
-    1. Scrape CMA news and circulars pages for new items
+    1. Scrape CMA news, circulars, and regulations pages
     2. Save new alerts to the database
     3. Optionally generate impact summaries and parse obligations
 
@@ -205,7 +304,10 @@ def run_scraper(parse_circulars: bool = True) -> dict:
     circular_items = scrape_cma_circulars()
     logger.info("Found %d new circulars", len(circular_items))
 
-    all_items = news_items + circular_items
+    regulation_items = scrape_cma_regulations()
+    logger.info("Found %d new regulations", len(regulation_items))
+
+    all_items = news_items + circular_items + regulation_items
 
     # Deduplicate by URL
     seen_urls = set()
@@ -221,6 +323,7 @@ def run_scraper(parse_circulars: bool = True) -> dict:
     result = {
         "news_found": len(news_items),
         "circulars_found": len(circular_items),
+        "regulations_found": len(regulation_items),
         "total_saved": saved,
         "impact_summaries_generated": 0,
         "obligations_extracted": 0,

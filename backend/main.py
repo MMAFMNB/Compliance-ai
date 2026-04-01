@@ -5,6 +5,8 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from contextlib import asynccontextmanager
+
 from config import FRONTEND_URL
 
 logging.basicConfig(level=logging.INFO)
@@ -23,10 +25,20 @@ from self_assessment import router as self_assessment_router
 from admin_routes import router as admin_router
 from feedback import router as feedback_router
 
+@asynccontextmanager
+async def lifespan(app):
+    """Start scheduler on startup, stop on shutdown."""
+    from scheduler import start_scheduler, stop_scheduler
+    start_scheduler()
+    yield
+    stop_scheduler()
+
+
 app = FastAPI(
     title="TAM Compliance AI",
     description="CMA Regulatory Compliance Assistant API",
     version="3.0.0",
+    lifespan=lifespan,
 )
 
 ALLOWED_ORIGINS = [
