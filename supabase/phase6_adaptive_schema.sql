@@ -120,8 +120,25 @@ CREATE TABLE IF NOT EXISTS learning_events (
 CREATE INDEX IF NOT EXISTS idx_learning_events_firm ON learning_events(firm_id);
 
 
+-- ─── Knowledge Embeddings ────────────────────────────────
+-- Stores vector embeddings for knowledge base entries (RAG).
+CREATE TABLE IF NOT EXISTS knowledge_embeddings (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  firm_id UUID REFERENCES firms(id),
+  knowledge_id UUID REFERENCES knowledge_base(id) ON DELETE CASCADE,
+  chunk_index INT DEFAULT 0,
+  chunk_text TEXT,
+  embedding VECTOR(1536),           -- OpenAI ada-002 dimensions
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_kb_emb_firm ON knowledge_embeddings(firm_id);
+CREATE INDEX IF NOT EXISTS idx_kb_emb_knowledge ON knowledge_embeddings(knowledge_id);
+
+
 -- ─── Enable RLS ───────────────────────────────────────────
 ALTER TABLE knowledge_base ENABLE ROW LEVEL SECURITY;
 ALTER TABLE prompt_configs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE accuracy_metrics ENABLE ROW LEVEL SECURITY;
 ALTER TABLE learning_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE knowledge_embeddings ENABLE ROW LEVEL SECURITY;
