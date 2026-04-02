@@ -24,6 +24,10 @@ from checklist import router as checklist_router
 from self_assessment import router as self_assessment_router
 from admin_routes import router as admin_router
 from feedback import router as feedback_router
+from aml_routes import router as aml_router
+from str_generator import router as str_router
+from watchlist_screening import router as screening_router
+from suitability import router as suitability_router
 
 @asynccontextmanager
 async def lifespan(app):
@@ -99,7 +103,8 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 TRACKED_PREFIXES = (
     "/api/chat", "/api/review", "/api/search", "/api/documents",
     "/api/checklist", "/api/assessment", "/api/impact-analysis",
-    "/api/calendar",
+    "/api/calendar", "/api/aml", "/api/str", "/api/screening",
+    "/api/suitability",
 )
 
 @app.middleware("http")
@@ -141,6 +146,11 @@ app.include_router(checklist_router)
 app.include_router(self_assessment_router)
 app.include_router(admin_router)
 app.include_router(feedback_router)
+app.include_router(aml_router)
+app.include_router(str_router)
+app.include_router(screening_router)
+app.include_router(suitability_router)
+
 
 
 @app.get("/")

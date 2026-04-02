@@ -20,6 +20,8 @@ import {
   Shield,
   Building2,
   BookOpen,
+  AlertOctagon,
+  UserCheck,
 } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 import {
@@ -154,6 +156,18 @@ export default function Sidebar({
           label="التقييم الذاتي"
           sublabel="Self-Assessment"
           onClick={() => router.push("/self-assessment")}
+        />
+        <NavItem
+          icon={<AlertOctagon size={16} />}
+          label="مكافحة غسل الأموال"
+          sublabel="AML Case Manager"
+          onClick={() => router.push("/aml")}
+        />
+        <NavItem
+          icon={<UserCheck size={16} />}
+          label="تقييم الملاءمة"
+          sublabel="Suitability Assessment"
+          onClick={() => router.push("/suitability")}
         />
         <NavItem
           icon={<BookOpen size={16} />}
