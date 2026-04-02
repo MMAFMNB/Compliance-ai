@@ -24,6 +24,9 @@ from checklist import router as checklist_router
 from self_assessment import router as self_assessment_router
 from admin_routes import router as admin_router
 from feedback import router as feedback_router
+from adaptive_prompts import router as adaptive_prompts_router
+from knowledge_base import router as knowledge_base_router
+from accuracy_tracking import router as accuracy_router
 from aml_routes import router as aml_router
 from str_generator import router as str_router
 from watchlist_screening import router as screening_router
@@ -104,7 +107,7 @@ TRACKED_PREFIXES = (
     "/api/chat", "/api/review", "/api/search", "/api/documents",
     "/api/checklist", "/api/assessment", "/api/impact-analysis",
     "/api/calendar", "/api/aml", "/api/str", "/api/screening",
-    "/api/suitability",
+    "/api/suitability", "/api/knowledge", "/api/prompts", "/api/accuracy",
 )
 
 @app.middleware("http")
@@ -146,6 +149,9 @@ app.include_router(checklist_router)
 app.include_router(self_assessment_router)
 app.include_router(admin_router)
 app.include_router(feedback_router)
+app.include_router(adaptive_prompts_router)
+app.include_router(knowledge_base_router)
+app.include_router(accuracy_router)
 app.include_router(aml_router)
 app.include_router(str_router)
 app.include_router(screening_router)

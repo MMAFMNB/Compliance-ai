@@ -22,6 +22,7 @@ import {
   BookOpen,
   AlertOctagon,
   UserCheck,
+  Brain,
 } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 import {
@@ -168,6 +169,12 @@ export default function Sidebar({
           label="تقييم الملاءمة"
           sublabel="Suitability Assessment"
           onClick={() => router.push("/suitability")}
+        />
+        <NavItem
+          icon={<Brain size={16} />}
+          label="التعلم التكيفي"
+          sublabel="Learning Dashboard"
+          onClick={() => router.push("/learning")}
         />
         <NavItem
           icon={<BookOpen size={16} />}
