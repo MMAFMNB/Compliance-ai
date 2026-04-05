@@ -2,7 +2,7 @@
   "master": {
     "tasks": [
       {
-        "id": 11,
+        "id": "11",
         "title": "Clean Up Orphaned References and Dead Code",
         "description": "Remove all references to deleted features from codebase including backend modules, frontend components, and test files",
         "details": "1. Update backend/feedback.py and backend/accuracy_tracking.py:\n```python\n# Remove from VALID_FEATURES list:\n# 'regulation_search', 'alerts', 'impact_analysis', 'compliance_checklist',\n# 'self_assessment', 'aml_case_manager', 'suitability_assessment', 'regulatory_intelligence'\n```\n2. Update frontend/src/app/learning/page.tsx feature filter to remove deleted features\n3. Fix dashboard.py comment referencing AuditEntry type\n4. Delete orphaned test files:\n   - backend/tests/test_alerts.py\n   - backend/tests/test_search.py\n   - e2e tests: alerts.spec.ts, search.spec.ts\n5. Update backend/tests/conftest.py to remove deleted feature fixtures\n6. Clean backend/load-tests/ files removing deleted endpoint references",
@@ -67,7 +67,7 @@
         "updatedAt": "2026-04-05T14:33:30.201Z"
       },
       {
-        "id": 12,
+        "id": "12",
         "title": "Audit and Verify Database Schema",
         "description": "Validate all required tables exist in live Supabase instance and document current state",
         "details": "1. Connect to live Supabase instance and run schema inspection:\n```sql\nSELECT table_name FROM information_schema.tables \nWHERE table_schema = 'public' ORDER BY table_name;\n```\n2. Compare against expected 28 tables from migrations\n3. For each table, check row counts:\n```sql\nSELECT 'table_name' as table, COUNT(*) as row_count FROM table_name;\n```\n4. Verify RLS policies exist:\n```sql\nSELECT tablename, policyname FROM pg_policies WHERE schemaname = 'public';\n```\n5. Document findings in a database_audit.md file\n6. Run any missing migrations using Supabase CLI if needed",
@@ -140,7 +140,7 @@
         "updatedAt": "2026-04-05T14:33:42.595Z"
       },
       {
-        "id": 13,
+        "id": "13",
         "title": "Fix Regulatory Chat Feature End-to-End",
         "description": "Ensure chat feature works completely from UI through RAG retrieval to response streaming",
         "details": "1. Verify frontend chat page loads without errors\n2. Test conversation creation API:\n```python\n# POST /api/chat/conversations\n# Verify conversation saved to conversations table\n```\n3. Test message sending with streaming:\n```python\n# POST /api/chat/messages\n# Verify RAG retrieval from chunks table\n# Verify embeddings similarity search works\n# Verify streaming response returns\n```\n4. Fix any issues with conversation history loading\n5. Test conversation deletion\n6. Seed chunks table with CMA regulatory content if empty:\n```python\n# Use existing CMA PDFs to populate chunks and embeddings\n```",
@@ -213,7 +213,7 @@
         "updatedAt": "2026-04-05T14:41:26.637Z"
       },
       {
-        "id": 14,
+        "id": "14",
         "title": "Fix Document Review Feature End-to-End",
         "description": "Ensure PDF upload, review processing, and results display work completely",
         "details": "1. Test PDF upload endpoint:\n```python\n# POST /api/documents/upload\n# Verify file saved to storage\n# Verify document record created\n```\n2. Test review generation:\n```python\n# POST /api/documents/{id}/review\n# Verify AI analysis runs\n# Verify findings saved to document_reviews table\n```\n3. Fix frontend review display component\n4. Ensure reviews appear in dashboard stats:\n```sql\nSELECT COUNT(*) FROM document_reviews WHERE firm_id = ?\n```\n5. Add review to audit trail entries\n6. Handle edge cases: large PDFs, non-English content, corrupted files",
@@ -287,7 +287,7 @@
         "updatedAt": "2026-04-05T14:41:36.241Z"
       },
       {
-        "id": 15,
+        "id": "15",
         "title": "Fix Compliance Calendar Feature End-to-End",
         "description": "Ensure calendar displays deadlines, allows CRUD operations, and integrates with CMA scraper",
         "details": "1. Fix deadline loading:\n```python\n# GET /api/compliance/deadlines\n# JOIN with deadline_categories table\n```\n2. Test deadline creation:\n```python\n# POST /api/compliance/deadlines\n# Verify saved with correct firm_id\n```\n3. Test status updates:\n```python\n# PATCH /api/compliance/deadlines/{id}\n# Update completed_at timestamp\n```\n4. Fix calendar UI component to display deadlines by date\n5. Ensure CMA scraper creates deadlines:\n```python\n# When obligations found, create corresponding deadlines\n```\n6. Add filtering by category and status",
@@ -296,7 +296,7 @@
         "dependencies": [
           "12"
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -305,7 +305,8 @@
             "dependencies": [],
             "details": "Update the deadline loading endpoint to include JOIN with deadline_categories table. Ensure proper filtering by firm_id and return deadline data with category names, colors, and icons. Handle pagination and sorting by due_date.",
             "status": "pending",
-            "testStrategy": "Test with multiple deadlines across different categories. Verify JOIN returns correct category data. Test pagination with large datasets. Ensure firm isolation works correctly."
+            "testStrategy": "Test with multiple deadlines across different categories. Verify JOIN returns correct category data. Test pagination with large datasets. Ensure firm isolation works correctly.",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -316,7 +317,8 @@
             ],
             "details": "Implement POST /api/compliance/deadlines for creating new deadlines with firm_id validation. Add PATCH /api/compliance/deadlines/{id} for status updates including completed_at timestamp. Implement DELETE endpoint with soft delete. Ensure all operations are properly audited.",
             "status": "pending",
-            "testStrategy": "Test creation with valid and invalid data. Verify PATCH updates completed_at when status changes to 'completed'. Test soft delete preserves data. Verify audit trail captures all operations."
+            "testStrategy": "Test creation with valid and invalid data. Verify PATCH updates completed_at when status changes to 'completed'. Test soft delete preserves data. Verify audit trail captures all operations.",
+            "parentId": "undefined"
           },
           {
             "id": 3,
@@ -328,7 +330,8 @@
             ],
             "details": "Fix the React/Vue calendar component to fetch deadlines from API and display them in a calendar grid view. Show deadlines on their due dates with category colors. Implement click handlers for viewing/editing deadlines. Add month/week/day view toggles. Ensure responsive design works on mobile.",
             "status": "pending",
-            "testStrategy": "Test calendar renders deadlines on correct dates. Verify category colors display properly. Test view switching between month/week/day. Test on various screen sizes for responsive behavior."
+            "testStrategy": "Test calendar renders deadlines on correct dates. Verify category colors display properly. Test view switching between month/week/day. Test on various screen sizes for responsive behavior.",
+            "parentId": "undefined"
           },
           {
             "id": 4,
@@ -339,7 +342,8 @@
             ],
             "details": "Modify CMA scraper to create deadline records when obligations are found during scraping. Map obligation types to deadline categories. Set appropriate due dates based on regulatory requirements. Include source reference and metadata from CMA. Ensure no duplicate deadlines are created for same obligations.",
             "status": "pending",
-            "testStrategy": "Run CMA scraper and verify deadlines are created for found obligations. Test duplicate prevention logic. Verify deadline metadata includes CMA source information. Check category mapping works correctly."
+            "testStrategy": "Run CMA scraper and verify deadlines are created for found obligations. Test duplicate prevention logic. Verify deadline metadata includes CMA source information. Check category mapping works correctly.",
+            "parentId": "undefined"
           },
           {
             "id": 5,
@@ -351,13 +355,14 @@
             ],
             "details": "Add query parameters to GET /api/compliance/deadlines for filtering by category_id, status (pending/completed/overdue), and date range. Update UI to include filter dropdowns/checkboxes. Implement quick filters for 'This Week', 'This Month', 'Overdue'. Ensure filters work together and update calendar view dynamically.",
             "status": "pending",
-            "testStrategy": "Test API filters return correct subsets of deadlines. Verify multiple filters work in combination. Test UI updates calendar view when filters change. Verify performance with large datasets."
+            "testStrategy": "Test API filters return correct subsets of deadlines. Verify multiple filters work in combination. Test UI updates calendar view when filters change. Verify performance with large datasets.",
+            "parentId": "undefined"
           }
         ],
-        "updatedAt": "2026-04-05T14:43:48.052Z"
+        "updatedAt": "2026-04-05T14:52:56.098Z"
       },
       {
-        "id": 16,
+        "id": "16",
         "title": "Fix Document Generator Feature End-to-End",
         "description": "Ensure template-based document generation works with variable substitution and review workflow",
         "details": "1. Seed document templates if empty:\n```sql\nINSERT INTO document_templates (name, content, fields, category)\nVALUES ('Compliance Report', '{content}', '{\"fields\": [...]}', 'reports');\n```\n2. Fix template loading endpoint:\n```python\n# GET /api/documents/templates\n```\n3. Test document generation:\n```python\n# POST /api/documents/generate\n# Replace template variables\n# Save to generated_documents table\n```\n4. Implement submit-for-review workflow:\n```python\n# POST /api/documents/{id}/submit-review\n# Update status, create notification\n```\n5. Fix frontend template selection and field mapping UI",
@@ -366,7 +371,7 @@
         "dependencies": [
           "12"
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -375,7 +380,8 @@
             "dependencies": [],
             "details": "Execute SQL script to insert default document templates with proper structure. Include templates for Compliance Report, Risk Assessment, and Audit Report with appropriate fields JSON structure containing field names, types, and validation rules.",
             "status": "pending",
-            "testStrategy": "Verify templates are correctly inserted by querying document_templates table and checking JSON field structure validity"
+            "testStrategy": "Verify templates are correctly inserted by querying document_templates table and checking JSON field structure validity",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -386,7 +392,8 @@
             ],
             "details": "Implement endpoint that fetches all templates from document_templates table, filters by category if provided, and returns template metadata including name, fields, and category. Include proper error handling and pagination support.",
             "status": "pending",
-            "testStrategy": "Test endpoint with various query parameters, verify response structure matches expected format, test error cases like invalid category"
+            "testStrategy": "Test endpoint with various query parameters, verify response structure matches expected format, test error cases like invalid category",
+            "parentId": "undefined"
           },
           {
             "id": 3,
@@ -397,7 +404,8 @@
             ],
             "details": "Create document generation logic that accepts template ID and field values, performs variable substitution using regex or template engine, validates all required fields are provided, and saves generated document to generated_documents table with proper metadata.",
             "status": "pending",
-            "testStrategy": "Test generation with all field types (text, date, number), verify variable substitution accuracy, test edge cases like missing fields or invalid data types"
+            "testStrategy": "Test generation with all field types (text, date, number), verify variable substitution accuracy, test edge cases like missing fields or invalid data types",
+            "parentId": "undefined"
           },
           {
             "id": 4,
@@ -408,7 +416,8 @@
             ],
             "details": "Implement endpoint that updates document status to 'pending_review', creates notification record for reviewers, adds audit trail entry, and handles state transitions. Include validation to ensure document exists and is in valid state for review.",
             "status": "pending",
-            "testStrategy": "Test workflow state transitions, verify notifications are created correctly, test concurrent review submissions, validate audit trail entries"
+            "testStrategy": "Test workflow state transitions, verify notifications are created correctly, test concurrent review submissions, validate audit trail entries",
+            "parentId": "undefined"
           },
           {
             "id": 5,
@@ -419,13 +428,14 @@
             ],
             "details": "Fix template dropdown component to load templates from API, implement dynamic form generation based on template fields JSON, add field validation on frontend, integrate with document generation API, and display generation status with proper error handling.",
             "status": "pending",
-            "testStrategy": "Test UI with different templates, verify field validation works, test document generation flow end-to-end, verify error messages display correctly"
+            "testStrategy": "Test UI with different templates, verify field validation works, test document generation flow end-to-end, verify error messages display correctly",
+            "parentId": "undefined"
           }
         ],
-        "updatedAt": "2026-04-05T14:44:00.364Z"
+        "updatedAt": "2026-04-05T14:53:13.310Z"
       },
       {
-        "id": 17,
+        "id": "17",
         "title": "Fix Dashboard Data Integrity and Expandable Cards",
         "description": "Ensure all dashboard stats show accurate counts and expand to show real detail items",
         "details": "1. Fix stat calculation queries:\n```python\n# GET /api/dashboard/stats\nstats = {\n    'conversations': db.query('SELECT COUNT(*) FROM conversations WHERE firm_id = ?'),\n    'documents': db.query('SELECT COUNT(*) FROM document_reviews WHERE firm_id = ?'),\n    'deadlines': db.query('SELECT COUNT(*) FROM deadlines WHERE firm_id = ? AND completed_at IS NULL'),\n    'alerts': db.query('SELECT COUNT(*) FROM alerts WHERE created_at > NOW() - INTERVAL 30 days')\n}\n```\n2. Implement detail endpoints for each stat:\n```python\n# GET /api/dashboard/conversations/recent\n# GET /api/dashboard/documents/recent\n# GET /api/dashboard/deadlines/upcoming\n# GET /api/dashboard/alerts/recent\n```\n3. Fix frontend expandable card components to fetch and display details\n4. Implement CMA scan button handler\n5. Fix audit trail to show real activities",
@@ -437,11 +447,12 @@
           "15",
           "16"
         ],
-        "status": "pending",
-        "subtasks": []
+        "status": "done",
+        "subtasks": [],
+        "updatedAt": "2026-04-05T14:53:49.104Z"
       },
       {
-        "id": 18,
+        "id": "18",
         "title": "Fix Learning Dashboard and Analytics",
         "description": "Ensure learning dashboard displays real accuracy metrics and knowledge base management works",
         "details": "1. Fix accuracy summary endpoint:\n```python\n# GET /api/learning/accuracy-summary\n# Aggregate from accuracy_metrics table\n```\n2. Implement accuracy trends calculation:\n```python\n# GET /api/learning/accuracy-trends\n# Group by date, calculate moving averages\n```\n3. Fix knowledge base CRUD:\n```python\n# POST /api/learning/knowledge-base\n# GET /api/learning/knowledge-base\n# DELETE /api/learning/knowledge-base/{id}\n```\n4. Fix prompt configs display:\n```python\n# GET /api/learning/prompt-configs\n```\n5. Ensure analyze-feedback job runs:\n```python\n# POST /api/learning/analyze-feedback\n# Process feedback, update metrics\n```\n6. Remove deleted features from filter dropdown",
@@ -451,7 +462,7 @@
           "12",
           "13"
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -460,7 +471,8 @@
             "dependencies": [],
             "details": "Create endpoint that queries accuracy_metrics table, aggregates data by feature/category, calculates overall accuracy percentages, and returns summary statistics for the learning dashboard display",
             "status": "pending",
-            "testStrategy": "Test with various accuracy_metrics entries, verify correct aggregation calculations, test empty database scenario, validate response format matches frontend expectations"
+            "testStrategy": "Test with various accuracy_metrics entries, verify correct aggregation calculations, test empty database scenario, validate response format matches frontend expectations",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -471,7 +483,8 @@
             ],
             "details": "Query accuracy_metrics grouped by date, implement moving average calculation (7-day and 30-day), handle date range parameters, return trend data suitable for chart visualization",
             "status": "pending",
-            "testStrategy": "Test with data spanning multiple time periods, verify moving average calculations are correct, test edge cases with sparse data, validate trend direction indicators"
+            "testStrategy": "Test with data spanning multiple time periods, verify moving average calculations are correct, test edge cases with sparse data, validate trend direction indicators",
+            "parentId": "undefined"
           },
           {
             "id": 3,
@@ -480,7 +493,8 @@
             "dependencies": [],
             "details": "Create POST /api/learning/knowledge-base for adding entries, GET endpoint for listing/retrieving entries with pagination, DELETE /api/learning/knowledge-base/{id} for removal, ensure proper validation and error handling",
             "status": "pending",
-            "testStrategy": "Test creating various knowledge base entries, verify retrieval with filters, test deletion and cascade effects, validate input sanitization and authorization"
+            "testStrategy": "Test creating various knowledge base entries, verify retrieval with filters, test deletion and cascade effects, validate input sanitization and authorization",
+            "parentId": "undefined"
           },
           {
             "id": 4,
@@ -489,7 +503,8 @@
             "dependencies": [],
             "details": "Query prompt configurations from database, format response for frontend display, include metadata like usage counts and effectiveness scores, support filtering by feature or status",
             "status": "pending",
-            "testStrategy": "Test retrieval of various prompt configs, verify filtering works correctly, test performance with large datasets, validate response structure"
+            "testStrategy": "Test retrieval of various prompt configs, verify filtering works correctly, test performance with large datasets, validate response structure",
+            "parentId": "undefined"
           },
           {
             "id": 5,
@@ -501,13 +516,14 @@
             ],
             "details": "Implement feedback processing logic to analyze user feedback, update accuracy_metrics table based on feedback, ensure job scheduling works, clean up deleted features from UI filter options",
             "status": "pending",
-            "testStrategy": "Submit various types of feedback and verify metrics update correctly, test job scheduling and execution, verify deleted features are removed from dropdowns, test concurrent feedback processing"
+            "testStrategy": "Submit various types of feedback and verify metrics update correctly, test job scheduling and execution, verify deleted features are removed from dropdowns, test concurrent feedback processing",
+            "parentId": "undefined"
           }
         ],
-        "updatedAt": "2026-04-05T14:44:14.888Z"
+        "updatedAt": "2026-04-05T14:53:30.070Z"
       },
       {
-        "id": 19,
+        "id": "19",
         "title": "Fix Admin Panel and Multi-Tenant Management",
         "description": "Ensure super admin can manage firms/users and firm admins can manage their users",
         "details": "1. Fix firm management for super_admin:\n```python\n# GET /api/admin/firms\n# POST /api/admin/firms\n# PATCH /api/admin/firms/{id} (activate/deactivate)\n```\n2. Fix user management:\n```python\n# GET /api/admin/users\n# PATCH /api/admin/users/{id}/role\n```\n3. Fix audit log display:\n```python\n# GET /api/admin/audit-log\n# JOIN with users and firms tables\n```\n4. Implement usage summary:\n```python\n# GET /api/admin/usage\n# Aggregate API calls, storage, etc.\n```\n5. Fix firm-scoped user management for firm_admin role\n6. Ensure RLS policies enforce firm isolation",
@@ -580,7 +596,7 @@
         "updatedAt": "2026-04-05T14:41:45.344Z"
       },
       {
-        "id": 20,
+        "id": "20",
         "title": "Fix CMA Scraper Pipeline End-to-End",
         "description": "Ensure CMA scraper fetches updates, parses circulars, and creates alerts/deadlines",
         "details": "1. Fix manual scan trigger:\n```python\n# POST /api/scraper/scan\n# Trigger immediate CMA website scrape\n```\n2. Verify scraper fetches from cma.gov.sa:\n```python\n# Check robots.txt compliance\n# Parse circular listings\n# Download new PDFs\n```\n3. Fix circular parser:\n```python\n# Extract obligations from PDF text\n# Use NLP to identify deadlines\n```\n4. Ensure alerts are created:\n```sql\nINSERT INTO alerts (title, description, source_url, circular_number)\n```\n5. Sync obligations to calendar:\n```sql\nINSERT INTO deadlines (title, due_date, source, source_id)\n```\n6. Fix scheduler for daily runs:\n```python\n# Configure cron job or scheduler\n```",
@@ -590,7 +606,7 @@
           "12",
           "15"
         ],
-        "status": "pending",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -599,7 +615,8 @@
             "dependencies": [],
             "details": "Create or fix the API endpoint that allows manual triggering of the CMA scraper. Ensure proper authentication, error handling, and response format. The endpoint should initiate the scraping process asynchronously and return a job ID or status.",
             "status": "pending",
-            "testStrategy": "Test endpoint with Postman/curl, verify it returns proper status codes, check that scraping job is queued/started, monitor logs for execution"
+            "testStrategy": "Test endpoint with Postman/curl, verify it returns proper status codes, check that scraping job is queued/started, monitor logs for execution",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -610,7 +627,8 @@
             ],
             "details": "Implement robots.txt checking and compliance, parse circular listings from CMA website HTML, implement PDF download functionality with proper error handling and retry logic. Store downloaded PDFs in appropriate storage location.",
             "status": "pending",
-            "testStrategy": "Verify robots.txt is checked before scraping, test parsing of circular listings against live CMA site, confirm PDFs are downloaded and stored correctly"
+            "testStrategy": "Verify robots.txt is checked before scraping, test parsing of circular listings against live CMA site, confirm PDFs are downloaded and stored correctly",
+            "parentId": "undefined"
           },
           {
             "id": 3,
@@ -621,7 +639,8 @@
             ],
             "details": "Use PDF parsing libraries to extract text from downloaded circulars, implement NLP models or rules to identify obligations and deadlines within the text, extract key metadata like circular numbers, dates, and compliance requirements.",
             "status": "pending",
-            "testStrategy": "Test parser with various circular PDF formats, verify text extraction accuracy, validate NLP identifies obligations and deadlines correctly, test edge cases"
+            "testStrategy": "Test parser with various circular PDF formats, verify text extraction accuracy, validate NLP identifies obligations and deadlines correctly, test edge cases",
+            "parentId": "undefined"
           },
           {
             "id": 4,
@@ -632,7 +651,8 @@
             ],
             "details": "Implement database insertion logic for alerts table including title, description, source_url, and circular_number fields. Handle duplicates, ensure data validation, and implement proper error handling for database operations.",
             "status": "pending",
-            "testStrategy": "Verify alerts are created in database after parsing, check for duplicate handling, validate all fields are populated correctly, test database constraints"
+            "testStrategy": "Verify alerts are created in database after parsing, check for duplicate handling, validate all fields are populated correctly, test database constraints",
+            "parentId": "undefined"
           },
           {
             "id": 5,
@@ -643,21 +663,157 @@
             ],
             "details": "Create logic to insert parsed deadlines into deadlines table with proper title, due_date, source, and source_id. Configure cron job or task scheduler for daily automated runs. Ensure proper logging and monitoring of scheduled tasks.",
             "status": "pending",
-            "testStrategy": "Verify deadlines are created with correct dates from parsed obligations, test scheduler runs at configured times, monitor logs for successful automated executions"
+            "testStrategy": "Verify deadlines are created with correct dates from parsed obligations, test scheduler runs at configured times, monitor logs for successful automated executions",
+            "parentId": "undefined"
           }
-        ]
+        ],
+        "updatedAt": "2026-04-05T14:53:41.105Z"
+      },
+      {
+        "id": "21",
+        "title": "Create AML Document Ingestion Core Module",
+        "description": "Build the core Python module for downloading and processing AML PDF documents from aml.gov.sa with proper Arabic URL encoding and error handling",
+        "details": "Create `backend/ingest_aml.py` with the following implementation:\n\n```python\nimport requests\nimport urllib.parse\nfrom pathlib import Path\nimport hashlib\nfrom datetime import datetime\nfrom typing import List, Dict, Optional\nimport logging\nfrom sqlalchemy.orm import Session\nfrom models import Document, Chunk\nfrom ingest import extract_text_from_pdf, chunk_text, generate_embeddings\n\nclass AMLDocumentIngester:\n    def __init__(self, db_session: Session):\n        self.session = db_session\n        self.logger = logging.getLogger(__name__)\n        self.temp_dir = Path('temp/aml_downloads')\n        self.temp_dir.mkdir(parents=True, exist_ok=True)\n        \n    def download_pdf(self, url: str, filename: str) -> Optional[Path]:\n        \"\"\"Download PDF handling Arabic URL encoding\"\"\"\n        try:\n            # Properly encode Arabic characters in URL\n            parsed = urllib.parse.urlparse(url)\n            encoded_path = urllib.parse.quote(parsed.path.encode('utf-8'))\n            encoded_url = f\"{parsed.scheme}://{parsed.netloc}{encoded_path}\"\n            \n            response = requests.get(encoded_url, timeout=60, verify=False)\n            response.raise_for_status()\n            \n            file_path = self.temp_dir / filename\n            file_path.write_bytes(response.content)\n            return file_path\n        except Exception as e:\n            self.logger.error(f\"Failed to download {url}: {e}\")\n            return None\n            \n    def check_duplicate(self, source_url: str) -> bool:\n        \"\"\"Check if document already ingested\"\"\"\n        existing = self.session.query(Document).filter_by(source_url=source_url).first()\n        return existing is not None\n        \n    def ingest_document(self, doc_info: Dict) -> Dict:\n        \"\"\"Ingest single document following existing pipeline\"\"\"\n        if self.check_duplicate(doc_info['url']):\n            return {'status': 'skipped', 'reason': 'already_exists'}\n            \n        # Download PDF\n        pdf_path = self.download_pdf(doc_info['url'], doc_info['filename'])\n        if not pdf_path:\n            return {'status': 'failed', 'reason': 'download_failed'}\n            \n        try:\n            # Extract text\n            text_content = extract_text_from_pdf(str(pdf_path))\n            \n            # Create document record\n            doc = Document(\n                title=doc_info['title'],\n                content=text_content[:1000],  # Store preview\n                source='aml.gov.sa',\n                source_url=doc_info['url'],\n                doc_type=doc_info['category'],\n                created_at=datetime.utcnow()\n            )\n            self.session.add(doc)\n            self.session.flush()\n            \n            # Chunk and embed\n            chunks = chunk_text(text_content, chunk_size=1000, overlap=200)\n            chunk_records = []\n            \n            for idx, chunk_text in enumerate(chunks):\n                embedding = generate_embeddings(chunk_text)\n                chunk = Chunk(\n                    document_id=doc.id,\n                    content=chunk_text,\n                    embedding=embedding,\n                    chunk_index=idx\n                )\n                chunk_records.append(chunk)\n                \n            self.session.bulk_save_objects(chunk_records)\n            self.session.commit()\n            \n            # Cleanup\n            pdf_path.unlink()\n            \n            return {\n                'status': 'success',\n                'document_id': doc.id,\n                'chunks_created': len(chunks)\n            }\n            \n        except Exception as e:\n            self.session.rollback()\n            self.logger.error(f\"Failed to ingest {doc_info['title']}: {e}\")\n            return {'status': 'failed', 'reason': str(e)}\n```",
+        "testStrategy": "1. Unit test download_pdf with mock requests to verify Arabic URL encoding\n2. Test check_duplicate with mock database queries\n3. Integration test full ingestion pipeline with small test PDF\n4. Verify chunk creation and embedding generation\n5. Test error handling for network failures and invalid PDFs\n6. Validate deduplication logic prevents re-ingestion",
+        "priority": "high",
+        "dependencies": [],
+        "status": "in-progress",
+        "subtasks": [],
+        "updatedAt": "2026-04-05T15:18:44.388Z"
+      },
+      {
+        "id": "22",
+        "title": "Define AML Document Registry and Configuration",
+        "description": "Create a configuration module that defines all 10 AML documents with their metadata, URLs, and categories for systematic ingestion",
+        "details": "Create `backend/aml_documents.py` with document registry:\n\n```python\nfrom dataclasses import dataclass\nfrom typing import List\n\n@dataclass\nclass AMLDocument:\n    title_ar: str\n    title_en: str\n    url: str\n    category: str\n    filename: str\n    \nAML_DOCUMENTS: List[AMLDocument] = [\n    AMLDocument(\n        title_ar='اللائحة التنفيذية لنظام مكافحة غسل الأموال',\n        title_en='AML Implementing Regulations',\n        url='https://www.aml.gov.sa/ar-sa/RulesAndRegulations/اللائحة التنفيذية لنظام مكافحة غسل الأموال.pdf',\n        category='regulation',\n        filename='aml_implementing_regulations.pdf'\n    ),\n    AMLDocument(\n        title_ar='اللائحة التنفيذية لنظام مكافحة جرائم الإرهاب وتمويله',\n        title_en='CTF Implementing Regulations',\n        url='https://www.aml.gov.sa/ar-sa/RulesAndRegulations/اللائحة التنفيذية لنظام مكافحة جرائم الإرهاب وتمويله.pdf',\n        category='regulation',\n        filename='ctf_implementing_regulations.pdf'\n    ),\n    AMLDocument(\n        title_ar='الدليل الارشادي لمكافحة غسل الأموال وتمويل الإرهاب للمعادن الثمينة والاحجار الكريمة',\n        title_en='AML/CTF Guide for Precious Metals & Stones',\n        url='https://www.aml.gov.sa/ar-sa/RulesAndInstructions/الدليل الارشادي لمكافحة غسل الأموال وتمويل الإرهاب للمعادن الثمينة والاحجار الكريمة المعتمد يناير 2024م.pdf',\n        category='guidance',\n        filename='precious_metals_guide_2024.pdf'\n    ),\n    AMLDocument(\n        title_ar='القواعد التنفيذية لنظام مكافحة جرائم الإرهاب وتمويله الصادرة عن هيئة السوق المالية',\n        title_en='CMA CTF Implementing Rules',\n        url='https://www.aml.gov.sa/ar-sa/RulesAndInstructions/القواعد التنفيذية لنظام مكافحة جرائم الإرهاب وتمويله الصادرة عن هيئة السوق المالية.pdf',\n        category='regulation',\n        filename='cma_ctf_rules.pdf'\n    ),\n    AMLDocument(\n        title_ar='قواعد مكافحة غسل الأموال وتمويل الإرهاب لهيئة السوق المالية لعام 2011م',\n        title_en='CMA AML/CTF Rules 2011',\n        url='https://www.aml.gov.sa/ar-sa/RulesAndInstructions/قواعد مكافحة غسل الأموال وتمويل الإرهاب لهيئة السوق المالية لعام 2011م.pdf',\n        category='regulation',\n        filename='cma_aml_rules_2011.pdf'\n    ),\n    AMLDocument(\n        title_ar='دليل المنهج القائم على المخاطر لنشاط الخدمات المالية',\n        title_en='Risk-Based Approach Guide for Financial Services',\n        url='https://www.aml.gov.sa/ar-sa/GuidanceReports/دليل المنهج القائم على المخاطر لنشاط الخدمات المالية.pdf',\n        category='guidance',\n        filename='risk_based_financial_services.pdf'\n    ),\n    AMLDocument(\n        title_ar='الدليل الاسترشادي (المحدث) لتقييم مخاطر تمويل انتشار التسلح',\n        title_en='Proliferation Financing Risk Assessment Guide',\n        url='https://www.aml.gov.sa/ar-sa/GuidanceReports/الدليل الاسترشادي (المحدث) لتقييم مخاطر تمويل انتشار التسلح وكيفية الحد من تلك المخاطر - عربي.pdf',\n        category='guidance',\n        filename='proliferation_financing_guide.pdf'\n    ),\n    AMLDocument(\n        title_ar='أفضل الممارسات- المستفيد الحقيقي للشخصيات الاعتبارية',\n        title_en='Beneficial Ownership Best Practices',\n        url='https://www.aml.gov.sa/ar-sa/GuidanceReports/أفضل الممارسات- المستفيد الحقيقي للشخصيات الاعتبارية.pdf',\n        category='guidance',\n        filename='beneficial_ownership_practices.pdf'\n    ),\n    AMLDocument(\n        title_ar='تقرير الفاتف عن غسل الأموال من خلال أساليب الدفع الجديد',\n        title_en='FATF Report on ML through New Payment Methods',\n        url='https://www.aml.gov.sa/ar-sa/GuidanceReports/تقرير الفاتف عن غسل الأموال من خلال أساليب الدفع الجديد.pdf',\n        category='report',\n        filename='fatf_new_payment_methods.pdf'\n    ),\n    AMLDocument(\n        title_ar='دليل المنهج القائم على المخاطر للبطاقات مسبقة الدفع',\n        title_en='Prepaid Cards, Mobile & Internet Payments Risk Guide',\n        url='https://www.aml.gov.sa/ar-sa/GuidanceReports/دليل المنهج القائم على المخاطر للبطاقات مسبقة الدفع، والمدفوعات عن طريق الجوال وخدمات الدفع عن طريق الإنترنت.pdf',\n        category='guidance',\n        filename='prepaid_cards_risk_guide.pdf'\n    )\n]\n\ndef get_aml_documents() -> List[dict]:\n    \"\"\"Return AML documents as dict for ingestion\"\"\"\n    return [\n        {\n            'title': f\"{doc.title_en} — {doc.title_ar}\",\n            'url': doc.url,\n            'category': doc.category,\n            'filename': doc.filename\n        }\n        for doc in AML_DOCUMENTS\n    ]\n```",
+        "testStrategy": "1. Validate all URLs are properly formatted and accessible\n2. Test Arabic text encoding in titles\n3. Verify unique filenames for each document\n4. Test get_aml_documents returns correct structure\n5. Validate categories match expected values (regulation/guidance/report)",
+        "priority": "high",
+        "dependencies": [],
+        "status": "in-progress",
+        "subtasks": [],
+        "updatedAt": "2026-04-05T15:18:57.756Z"
+      },
+      {
+        "id": "23",
+        "title": "Create AML Ingestion API Endpoint",
+        "description": "Implement authenticated API endpoint to trigger AML document ingestion with progress tracking and admin-only access control",
+        "details": "Add to `backend/api/dashboard.py`:\n\n```python\nfrom fastapi import APIRouter, Depends, HTTPException, BackgroundTasks\nfrom sqlalchemy.orm import Session\nfrom auth import get_current_user, require_admin\nfrom database import get_db\nfrom ingest_aml import AMLDocumentIngester\nfrom aml_documents import get_aml_documents\nimport asyncio\nfrom typing import Dict\nimport uuid\n\n# In-memory progress tracking\ningestion_progress = {}\n\n@router.post(\"/api/dashboard/ingest-aml\")\nasync def ingest_aml_documents(\n    background_tasks: BackgroundTasks,\n    current_user: dict = Depends(require_admin),\n    db: Session = Depends(get_db)\n):\n    \"\"\"Trigger AML document ingestion (admin only)\"\"\"\n    \n    # Generate task ID for progress tracking\n    task_id = str(uuid.uuid4())\n    \n    # Initialize progress\n    ingestion_progress[task_id] = {\n        'status': 'started',\n        'total': 10,\n        'completed': 0,\n        'failed': 0,\n        'skipped': 0,\n        'details': []\n    }\n    \n    # Run ingestion in background\n    background_tasks.add_task(\n        run_aml_ingestion,\n        task_id=task_id,\n        db=db\n    )\n    \n    return {\n        'task_id': task_id,\n        'message': 'AML document ingestion started',\n        'total_documents': 10\n    }\n\nasync def run_aml_ingestion(task_id: str, db: Session):\n    \"\"\"Background task to ingest all AML documents\"\"\"\n    ingester = AMLDocumentIngester(db)\n    documents = get_aml_documents()\n    \n    for idx, doc in enumerate(documents):\n        try:\n            # Update progress\n            ingestion_progress[task_id]['status'] = f'Processing {idx+1}/10'\n            \n            # Ingest document\n            result = ingester.ingest_document(doc)\n            \n            # Update counters\n            if result['status'] == 'success':\n                ingestion_progress[task_id]['completed'] += 1\n            elif result['status'] == 'skipped':\n                ingestion_progress[task_id]['skipped'] += 1\n            else:\n                ingestion_progress[task_id]['failed'] += 1\n                \n            # Add to details\n            ingestion_progress[task_id]['details'].append({\n                'document': doc['title'],\n                'result': result\n            })\n            \n        except Exception as e:\n            ingestion_progress[task_id]['failed'] += 1\n            ingestion_progress[task_id]['details'].append({\n                'document': doc['title'],\n                'result': {'status': 'error', 'message': str(e)}\n            })\n            \n    ingestion_progress[task_id]['status'] = 'completed'\n    \n@router.get(\"/api/dashboard/ingest-aml/{task_id}\")\nasync def get_ingestion_progress(\n    task_id: str,\n    current_user: dict = Depends(get_current_user)\n):\n    \"\"\"Get progress of AML ingestion task\"\"\"\n    if task_id not in ingestion_progress:\n        raise HTTPException(status_code=404, detail=\"Task not found\")\n        \n    return ingestion_progress[task_id]\n```",
+        "testStrategy": "1. Test endpoint requires admin authentication\n2. Verify background task starts and returns task_id\n3. Test progress endpoint returns real-time updates\n4. Mock ingestion process to test success/skip/fail scenarios\n5. Test concurrent ingestion requests are handled\n6. Verify memory cleanup for old task progress data",
+        "priority": "high",
+        "dependencies": [
+          "21",
+          "22"
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": "24",
+        "title": "Implement High Risk Countries Web Scraper",
+        "description": "Create a scraper for the AML high risk countries page that extracts country names and risk classifications into structured data",
+        "details": "Create `backend/scrapers/aml_countries_scraper.py`:\n\n```python\nimport requests\nfrom bs4 import BeautifulSoup\nfrom datetime import datetime\nfrom typing import List, Dict\nimport logging\nfrom sqlalchemy.orm import Session\nfrom models import Base, Column, Integer, String, DateTime, Boolean\nfrom sqlalchemy.ext.declarative import declarative_base\n\n# Define new model for high risk countries\nclass HighRiskCountry(Base):\n    __tablename__ = 'high_risk_countries'\n    \n    id = Column(Integer, primary_key=True)\n    country_name_ar = Column(String(255))\n    country_name_en = Column(String(255))\n    risk_category = Column(String(50))  # 'high_risk', 'under_monitoring'\n    source = Column(String(50), default='aml.gov.sa')\n    is_active = Column(Boolean, default=True)\n    last_updated = Column(DateTime, default=datetime.utcnow)\n    \nclass AMLCountriesScraper:\n    def __init__(self, db_session: Session):\n        self.session = db_session\n        self.logger = logging.getLogger(__name__)\n        self.url = 'https://www.aml.gov.sa/ar-sa/Pages/HighRiskCountries.aspx'\n        \n    def scrape_countries(self) -> List[Dict]:\n        \"\"\"Scrape high risk countries from AML website\"\"\"\n        try:\n            response = requests.get(self.url, timeout=30, verify=False)\n            response.raise_for_status()\n            \n            soup = BeautifulSoup(response.content, 'html.parser')\n            countries = []\n            \n            # Find high risk countries section\n            high_risk_section = soup.find('div', {'class': 'high-risk-countries'})\n            if high_risk_section:\n                country_items = high_risk_section.find_all('li')\n                for item in country_items:\n                    countries.append({\n                        'name': item.text.strip(),\n                        'category': 'high_risk'\n                    })\n                    \n            # Find countries under monitoring section\n            monitoring_section = soup.find('div', {'class': 'monitoring-countries'})\n            if monitoring_section:\n                country_items = monitoring_section.find_all('li')\n                for item in country_items:\n                    countries.append({\n                        'name': item.text.strip(),\n                        'category': 'under_monitoring'\n                    })\n                    \n            return countries\n            \n        except Exception as e:\n            self.logger.error(f\"Failed to scrape countries: {e}\")\n            return []\n            \n    def update_database(self, countries: List[Dict]):\n        \"\"\"Update high risk countries in database\"\"\"\n        try:\n            # Mark all existing as inactive\n            self.session.query(HighRiskCountry).update({'is_active': False})\n            \n            # Insert or update countries\n            for country in countries:\n                existing = self.session.query(HighRiskCountry).filter_by(\n                    country_name_ar=country['name']\n                ).first()\n                \n                if existing:\n                    existing.is_active = True\n                    existing.risk_category = country['category']\n                    existing.last_updated = datetime.utcnow()\n                else:\n                    new_country = HighRiskCountry(\n                        country_name_ar=country['name'],\n                        risk_category=country['category'],\n                        is_active=True\n                    )\n                    self.session.add(new_country)\n                    \n            self.session.commit()\n            self.logger.info(f\"Updated {len(countries)} high risk countries\")\n            \n        except Exception as e:\n            self.session.rollback()\n            self.logger.error(f\"Failed to update database: {e}\")\n            \n    def get_active_countries(self) -> List[HighRiskCountry]:\n        \"\"\"Get all active high risk countries\"\"\"\n        return self.session.query(HighRiskCountry).filter_by(is_active=True).all()\n```",
+        "testStrategy": "1. Mock HTML response to test parsing logic\n2. Test extraction of both high risk and monitoring categories\n3. Verify database update marks old entries as inactive\n4. Test handling of duplicate countries\n5. Validate error handling for network failures\n6. Test get_active_countries returns only current data",
+        "priority": "medium",
+        "dependencies": [],
+        "status": "in-progress",
+        "subtasks": [],
+        "updatedAt": "2026-04-05T15:19:11.302Z"
+      },
+      {
+        "id": "25",
+        "title": "Extend Periodic Scraper for AML.gov.sa",
+        "description": "Add AML.gov.sa to the existing periodic scraping infrastructure to check for new documents and updates alongside CMA scraping",
+        "details": "Create `backend/scrapers/aml_document_scraper.py`:\n\n```python\nimport requests\nfrom bs4 import BeautifulSoup\nfrom datetime import datetime\nfrom typing import List, Dict, Optional\nimport hashlib\nfrom urllib.parse import urljoin\nimport logging\nfrom sqlalchemy.orm import Session\nfrom models import Alert, Document\n\nclass AMLDocumentScraper:\n    def __init__(self, db_session: Session):\n        self.session = db_session\n        self.logger = logging.getLogger(__name__)\n        self.base_url = 'https://www.aml.gov.sa'\n        self.pages_to_check = [\n            '/ar-sa/RulesAndRegulations/Pages/default.aspx',\n            '/ar-sa/RulesAndInstructions/Pages/default.aspx',\n            '/ar-sa/GuidanceReports/Pages/default.aspx'\n        ]\n        \n    def scrape_for_updates(self) -> List[Dict]:\n        \"\"\"Check AML website for new or updated documents\"\"\"\n        all_findings = []\n        \n        for page_path in self.pages_to_check:\n            url = urljoin(self.base_url, page_path)\n            findings = self._scrape_page(url)\n            all_findings.extend(findings)\n            \n        return all_findings\n        \n    def _scrape_page(self, url: str) -> List[Dict]:\n        \"\"\"Scrape individual page for documents\"\"\"\n        try:\n            response = requests.get(url, timeout=30, verify=False)\n            response.raise_for_status()\n            \n            soup = BeautifulSoup(response.content, 'html.parser')\n            findings = []\n            \n            # Find all PDF links\n            pdf_links = soup.find_all('a', href=lambda x: x and x.endswith('.pdf'))\n            \n            for link in pdf_links:\n                pdf_url = urljoin(self.base_url, link.get('href'))\n                title = link.text.strip() or 'Untitled Document'\n                \n                # Check if document exists in database\n                existing = self.session.query(Document).filter_by(\n                    source_url=pdf_url\n                ).first()\n                \n                if not existing:\n                    findings.append({\n                        'type': 'new_document',\n                        'url': pdf_url,\n                        'title': title,\n                        'found_at': datetime.utcnow()\n                    })\n                else:\n                    # Check if document was updated (would need file metadata)\n                    # For now, skip update detection\n                    pass\n                    \n            return findings\n            \n        except Exception as e:\n            self.logger.error(f\"Failed to scrape {url}: {e}\")\n            return []\n            \n    def save_alerts(self, findings: List[Dict]):\n        \"\"\"Save new findings as alerts\"\"\"\n        for finding in findings:\n            alert = Alert(\n                source='aml.gov.sa',\n                alert_type=finding['type'],\n                title=f\"New AML Document: {finding['title']}\",\n                description=f\"Found new document at {finding['url']}\",\n                url=finding['url'],\n                created_at=finding['found_at']\n            )\n            self.session.add(alert)\n            \n        self.session.commit()\n        self.logger.info(f\"Saved {len(findings)} new AML alerts\")\n\n# Update the main scheduler to include AML scraping\ndef update_scheduler():\n    \"\"\"Add to existing scheduler.py\"\"\"\n    from scrapers.aml_document_scraper import AMLDocumentScraper\n    from scrapers.aml_countries_scraper import AMLCountriesScraper\n    \n    # In the daily job function:\n    def daily_scraping_job():\n        with get_db() as db:\n            # Existing CMA scraping...\n            \n            # Add AML document scraping\n            aml_doc_scraper = AMLDocumentScraper(db)\n            aml_findings = aml_doc_scraper.scrape_for_updates()\n            if aml_findings:\n                aml_doc_scraper.save_alerts(aml_findings)\n                \n            # Add high risk countries update\n            aml_countries_scraper = AMLCountriesScraper(db)\n            countries = aml_countries_scraper.scrape_countries()\n            if countries:\n                aml_countries_scraper.update_database(countries)\n```",
+        "testStrategy": "1. Mock AML website responses to test document discovery\n2. Test deduplication against existing documents\n3. Verify alert creation for new findings\n4. Test integration with existing scheduler\n5. Validate error handling doesn't break other scrapers\n6. Test performance with multiple page scraping",
+        "priority": "medium",
+        "dependencies": [
+          "24"
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": "26",
+        "title": "Build Dashboard Data Sources Panel UI",
+        "description": "Create a React component for the dashboard that displays data source status for both CMA and AML with ingestion controls",
+        "details": "Create `frontend/src/components/DataSourcesPanel.tsx`:\n\n```typescript\nimport React, { useState, useEffect } from 'react';\nimport { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';\nimport { Button } from '@/components/ui/button';\nimport { Badge } from '@/components/ui/badge';\nimport { RefreshCw, Download, Clock, FileText, AlertCircle } from 'lucide-react';\nimport { useToast } from '@/components/ui/use-toast';\nimport { format } from 'date-fns';\n\ninterface DataSource {\n  name: string;\n  source: string;\n  lastScan: string | null;\n  documentCount: number;\n  chunkCount: number;\n  status: 'active' | 'updating' | 'error';\n}\n\ninterface IngestionProgress {\n  status: string;\n  total: number;\n  completed: number;\n  failed: number;\n  skipped: number;\n}\n\nexport const DataSourcesPanel: React.FC = () => {\n  const [sources, setSources] = useState<DataSource[]>([]);\n  const [loading, setLoading] = useState(false);\n  const [ingesting, setIngesting] = useState(false);\n  const [taskId, setTaskId] = useState<string | null>(null);\n  const [progress, setProgress] = useState<IngestionProgress | null>(null);\n  const { toast } = useToast();\n  \n  useEffect(() => {\n    fetchDataSources();\n  }, []);\n  \n  useEffect(() => {\n    if (taskId) {\n      const interval = setInterval(() => {\n        checkIngestionProgress(taskId);\n      }, 2000);\n      return () => clearInterval(interval);\n    }\n  }, [taskId]);\n  \n  const fetchDataSources = async () => {\n    try {\n      const response = await fetch('/api/dashboard/data-sources', {\n        headers: {\n          'Authorization': `Bearer ${localStorage.getItem('token')}`\n        }\n      });\n      const data = await response.json();\n      setSources(data.sources);\n    } catch (error) {\n      toast({\n        title: 'Error',\n        description: 'Failed to fetch data sources',\n        variant: 'destructive'\n      });\n    }\n  };\n  \n  const handleIngestAML = async () => {\n    setIngesting(true);\n    try {\n      const response = await fetch('/api/dashboard/ingest-aml', {\n        method: 'POST',\n        headers: {\n          'Authorization': `Bearer ${localStorage.getItem('token')}`\n        }\n      });\n      \n      if (!response.ok) throw new Error('Failed to start ingestion');\n      \n      const data = await response.json();\n      setTaskId(data.task_id);\n      \n      toast({\n        title: 'Ingestion Started',\n        description: 'AML document ingestion is in progress'\n      });\n    } catch (error) {\n      toast({\n        title: 'Error',\n        description: 'Failed to start AML ingestion',\n        variant: 'destructive'\n      });\n      setIngesting(false);\n    }\n  };\n  \n  const checkIngestionProgress = async (id: string) => {\n    try {\n      const response = await fetch(`/api/dashboard/ingest-aml/${id}`, {\n        headers: {\n          'Authorization': `Bearer ${localStorage.getItem('token')}`\n        }\n      });\n      const data = await response.json();\n      setProgress(data);\n      \n      if (data.status === 'completed') {\n        setIngesting(false);\n        setTaskId(null);\n        setProgress(null);\n        fetchDataSources();\n        \n        toast({\n          title: 'Ingestion Complete',\n          description: `Processed ${data.completed} documents successfully`\n        });\n      }\n    } catch (error) {\n      console.error('Failed to check progress:', error);\n    }\n  };\n  \n  return (\n    <Card>\n      <CardHeader>\n        <CardTitle className=\"flex items-center justify-between\">\n          <span>Data Sources</span>\n          <Button\n            size=\"sm\"\n            variant=\"outline\"\n            onClick={fetchDataSources}\n            disabled={loading}\n          >\n            <RefreshCw className=\"h-4 w-4 mr-2\" />\n            Refresh\n          </Button>\n        </CardTitle>\n      </CardHeader>\n      <CardContent>\n        <div className=\"space-y-4\">\n          {sources.map((source) => (\n            <div key={source.source} className=\"border rounded-lg p-4\">\n              <div className=\"flex items-center justify-between mb-2\">\n                <h3 className=\"font-semibold\">{source.name}</h3>\n                <Badge variant={source.status === 'active' ? 'default' : 'secondary'}>\n                  {source.status}\n                </Badge>\n              </div>\n              \n              <div className=\"grid grid-cols-3 gap-4 text-sm text-gray-600\">\n                <div className=\"flex items-center\">\n                  <Clock className=\"h-4 w-4 mr-1\" />\n                  Last scan: {source.lastScan ? format(new Date(source.lastScan), 'MMM d, HH:mm') : 'Never'}\n                </div>\n                <div className=\"flex items-center\">\n                  <FileText className=\"h-4 w-4 mr-1\" />\n                  {source.documentCount} documents\n                </div>\n                <div className=\"flex items-center\">\n                  <FileText className=\"h-4 w-4 mr-1\" />\n                  {source.chunkCount} chunks\n                </div>\n              </div>\n              \n              {source.source === 'aml.gov.sa' && (\n                <div className=\"mt-3\">\n                  <Button\n                    size=\"sm\"\n                    onClick={handleIngestAML}\n                    disabled={ingesting}\n                  >\n                    <Download className=\"h-4 w-4 mr-2\" />\n                    {ingesting ? 'Ingesting...' : 'Ingest AML Documents'}\n                  </Button>\n                  \n                  {progress && (\n                    <div className=\"mt-2 p-2 bg-gray-50 rounded text-sm\">\n                      <div>Status: {progress.status}</div>\n                      <div>Progress: {progress.completed + progress.skipped}/{progress.total}</div>\n                      {progress.failed > 0 && (\n                        <div className=\"text-red-600\">\n                          <AlertCircle className=\"h-4 w-4 inline mr-1\" />\n                          {progress.failed} failed\n                        </div>\n                      )}\n                    </div>\n                  )}\n                </div>\n              )}\n            </div>\n          ))}\n        </div>\n      </CardContent>\n    </Card>\n  );\n};\n```",
+        "testStrategy": "1. Test component renders data sources correctly\n2. Mock API calls for data source fetching\n3. Test ingestion button triggers API call\n4. Verify progress polling updates UI\n5. Test error handling and toast notifications\n6. Validate responsive design on mobile devices",
+        "priority": "medium",
+        "dependencies": [
+          "23"
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": "27",
+        "title": "Create Data Sources Statistics API",
+        "description": "Build API endpoint to aggregate and return statistics about CMA and AML data sources for the dashboard display",
+        "details": "Add to `backend/api/dashboard.py`:\n\n```python\nfrom sqlalchemy import func, and_\nfrom datetime import datetime, timedelta\n\n@router.get(\"/api/dashboard/data-sources\")\nasync def get_data_sources_stats(\n    current_user: dict = Depends(get_current_user),\n    db: Session = Depends(get_db)\n):\n    \"\"\"Get statistics for all data sources\"\"\"\n    \n    sources_data = []\n    \n    # CMA Statistics\n    cma_docs = db.query(func.count(Document.id)).filter(\n        Document.source == 'cma.gov.sa'\n    ).scalar() or 0\n    \n    cma_chunks = db.query(func.count(Chunk.id)).join(Document).filter(\n        Document.source == 'cma.gov.sa'\n    ).scalar() or 0\n    \n    # Get last CMA scan from alerts or scraping logs\n    last_cma_scan = db.query(func.max(Alert.created_at)).filter(\n        Alert.source == 'cma.gov.sa'\n    ).scalar()\n    \n    sources_data.append({\n        'name': 'Capital Market Authority (CMA)',\n        'source': 'cma.gov.sa',\n        'lastScan': last_cma_scan.isoformat() if last_cma_scan else None,\n        'documentCount': cma_docs,\n        'chunkCount': cma_chunks,\n        'status': 'active'\n    })\n    \n    # AML Statistics\n    aml_docs = db.query(func.count(Document.id)).filter(\n        Document.source == 'aml.gov.sa'\n    ).scalar() or 0\n    \n    aml_chunks = db.query(func.count(Chunk.id)).join(Document).filter(\n        Document.source == 'aml.gov.sa'\n    ).scalar() or 0\n    \n    # Get last AML ingestion time\n    last_aml_ingest = db.query(func.max(Document.created_at)).filter(\n        Document.source == 'aml.gov.sa'\n    ).scalar()\n    \n    # Check if ingestion is in progress\n    aml_status = 'active'\n    for task_id, progress in ingestion_progress.items():\n        if progress['status'] != 'completed':\n            aml_status = 'updating'\n            break\n    \n    sources_data.append({\n        'name': 'Anti-Money Laundering Authority (AML)',\n        'source': 'aml.gov.sa',\n        'lastScan': last_aml_ingest.isoformat() if last_aml_ingest else None,\n        'documentCount': aml_docs,\n        'chunkCount': aml_chunks,\n        'status': aml_status\n    })\n    \n    # Additional metrics\n    total_documents = cma_docs + aml_docs\n    total_chunks = cma_chunks + aml_chunks\n    \n    # Get recent activity (last 7 days)\n    recent_date = datetime.utcnow() - timedelta(days=7)\n    recent_docs = db.query(func.count(Document.id)).filter(\n        Document.created_at >= recent_date\n    ).scalar() or 0\n    \n    return {\n        'sources': sources_data,\n        'summary': {\n            'totalDocuments': total_documents,\n            'totalChunks': total_chunks,\n            'recentDocuments': recent_docs\n        }\n    }\n\n@router.get(\"/api/dashboard/source-details/{source}\")\nasync def get_source_details(\n    source: str,\n    current_user: dict = Depends(get_current_user),\n    db: Session = Depends(get_db)\n):\n    \"\"\"Get detailed information about a specific source\"\"\"\n    \n    if source not in ['cma.gov.sa', 'aml.gov.sa']:\n        raise HTTPException(status_code=400, detail=\"Invalid source\")\n    \n    # Get documents by category\n    categories = db.query(\n        Document.doc_type,\n        func.count(Document.id).label('count')\n    ).filter(\n        Document.source == source\n    ).group_by(Document.doc_type).all()\n    \n    # Get recent documents\n    recent_docs = db.query(Document).filter(\n        Document.source == source\n    ).order_by(Document.created_at.desc()).limit(10).all()\n    \n    return {\n        'source': source,\n        'categories': [\n            {'type': cat.doc_type, 'count': cat.count}\n            for cat in categories\n        ],\n        'recentDocuments': [\n            {\n                'id': doc.id,\n                'title': doc.title,\n                'type': doc.doc_type,\n                'createdAt': doc.created_at.isoformat()\n            }\n            for doc in recent_docs\n        ]\n    }\n```",
+        "testStrategy": "1. Test aggregation queries return correct counts\n2. Verify status reflects ongoing ingestion\n3. Test with empty database returns zero counts\n4. Validate date formatting in responses\n5. Test source details endpoint with valid/invalid sources\n6. Performance test with large document counts",
+        "priority": "medium",
+        "dependencies": [
+          "21"
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": "28",
+        "title": "Update Chat System Prompt for AML Knowledge",
+        "description": "Modify the chat system prompt to include AML/CTF regulatory knowledge and ensure RAG retrieval covers both CMA and AML documents",
+        "details": "Update `backend/chat/system_prompts.py` and RAG configuration:\n\n```python\n# Update system prompt\nCOMPLIANCE_SYSTEM_PROMPT = \"\"\"\nYou are TAM AI, an expert compliance assistant specializing in Saudi Arabian financial regulations.\n\nYour knowledge base includes:\n1. Capital Market Authority (CMA) regulations and circulars\n2. Anti-Money Laundering (AML) and Counter-Terrorist Financing (CTF) regulations from SAFIU\n3. SAMA (Saudi Central Bank) regulations\n4. International compliance standards (FATF, Basel)\n\nKey areas of expertise:\n- Securities and investment regulations\n- AML/CTF compliance requirements\n- Risk-based approach methodologies\n- Beneficial ownership requirements\n- Suspicious transaction reporting\n- Customer due diligence (CDD) and enhanced due diligence (EDD)\n- Proliferation financing risks\n- High-risk jurisdictions and sanctions\n\nWhen answering questions:\n1. Always cite specific articles, regulations, or guidance documents\n2. Distinguish between CMA requirements and AML/SAFIU requirements\n3. Provide practical implementation guidance\n4. Consider both Arabic and English terminology\n5. Reference the most recent versions of regulations\n\nIf asked about high-risk countries, refer to the official SAFIU list.\nFor AML/CTF matters, prioritize SAFIU regulations and guidance.\nFor capital market matters, prioritize CMA regulations.\n\"\"\"\n\n# Update RAG retrieval to search both sources\ndef update_rag_search():\n    \"\"\"Modify backend/chat/rag_service.py\"\"\"\n    \n    def search_knowledge_base(query: str, limit: int = 5) -> List[Dict]:\n        \"\"\"Enhanced search across all data sources\"\"\"\n        \n        # Generate query embedding\n        query_embedding = generate_embeddings(query)\n        \n        # Search across all sources with source weighting\n        results = db.query(\n            Chunk.id,\n            Chunk.content,\n            Chunk.document_id,\n            Document.title,\n            Document.source,\n            Document.doc_type,\n            func.sqrt(\n                func.sum(\n                    func.pow(Chunk.embedding - query_embedding, 2)\n                )\n            ).label('distance')\n        ).join(\n            Document, Chunk.document_id == Document.id\n        ).filter(\n            Document.source.in_(['cma.gov.sa', 'aml.gov.sa'])\n        ).order_by(\n            'distance'\n        ).limit(limit * 2).all()  # Get more results for filtering\n        \n        # Ensure diversity of sources in results\n        cma_results = [r for r in results if r.source == 'cma.gov.sa']\n        aml_results = [r for r in results if r.source == 'aml.gov.sa']\n        \n        # Balance results from both sources\n        final_results = []\n        for i in range(limit):\n            if i < len(cma_results):\n                final_results.append(cma_results[i])\n            if i < len(aml_results) and len(final_results) < limit:\n                final_results.append(aml_results[i])\n                \n        return final_results[:limit]\n\n# Add source-specific context formatting\ndef format_context(chunks: List[Dict]) -> str:\n    \"\"\"Format retrieved chunks with source attribution\"\"\"\n    context_parts = []\n    \n    for chunk in chunks:\n        source_label = \"CMA\" if chunk['source'] == 'cma.gov.sa' else \"AML/SAFIU\"\n        context_parts.append(\n            f\"[Source: {source_label} - {chunk['title']}]\\n\"\n            f\"{chunk['content']}\\n\\n\"\n        )\n        \n    return \"\\n\".join(context_parts)\n```",
+        "testStrategy": "1. Test chat with AML-specific questions\n2. Verify citations include both CMA and AML sources\n3. Test source diversity in RAG results\n4. Validate handling of Arabic terms in queries\n5. Test high-risk country queries use SAFIU data\n6. Benchmark retrieval performance with expanded corpus",
+        "priority": "high",
+        "dependencies": [
+          "21"
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": "29",
+        "title": "Implement Database Migrations for New Tables",
+        "description": "Create Alembic migrations for the high_risk_countries table and any schema updates needed for AML data integration",
+        "details": "Create migration file `backend/alembic/versions/xxx_add_aml_tables.py`:\n\n```python\n\"\"\"Add AML related tables and columns\n\nRevision ID: xxx_add_aml_tables\nRevises: previous_revision_id\nCreate Date: 2024-01-XX\n\n\"\"\"\nfrom alembic import op\nimport sqlalchemy as sa\nfrom sqlalchemy.dialects import postgresql\n\n# revision identifiers\nrevision = 'xxx_add_aml_tables'\ndown_revision = 'previous_revision_id'\nbranch_labels = None\ndepends_on = None\n\ndef upgrade():\n    # Create high_risk_countries table\n    op.create_table(\n        'high_risk_countries',\n        sa.Column('id', sa.Integer(), nullable=False),\n        sa.Column('country_name_ar', sa.String(255), nullable=True),\n        sa.Column('country_name_en', sa.String(255), nullable=True),\n        sa.Column('risk_category', sa.String(50), nullable=True),\n        sa.Column('source', sa.String(50), server_default='aml.gov.sa'),\n        sa.Column('is_active', sa.Boolean(), server_default='true'),\n        sa.Column('last_updated', sa.DateTime(), server_default=sa.func.now()),\n        sa.PrimaryKeyConstraint('id')\n    )\n    \n    # Add indexes for performance\n    op.create_index(\n        'idx_high_risk_countries_active',\n        'high_risk_countries',\n        ['is_active']\n    )\n    \n    op.create_index(\n        'idx_high_risk_countries_category',\n        'high_risk_countries',\n        ['risk_category']\n    )\n    \n    # Add source index to documents table if not exists\n    op.create_index(\n        'idx_documents_source',\n        'documents',\n        ['source'],\n        postgresql_using='btree'\n    )\n    \n    # Add doc_type index for category filtering\n    op.create_index(\n        'idx_documents_doc_type',\n        'documents',\n        ['doc_type'],\n        postgresql_using='btree'\n    )\n    \n    # Add composite index for source queries\n    op.create_index(\n        'idx_documents_source_created',\n        'documents',\n        ['source', 'created_at'],\n        postgresql_using='btree'\n    )\n    \n    # Update existing documents to ensure source field is populated\n    op.execute(\"\"\"\n        UPDATE documents \n        SET source = 'cma.gov.sa' \n        WHERE source IS NULL OR source = ''\n    \"\"\")\n    \ndef downgrade():\n    # Drop indexes\n    op.drop_index('idx_documents_source_created', 'documents')\n    op.drop_index('idx_documents_doc_type', 'documents')\n    op.drop_index('idx_documents_source', 'documents')\n    op.drop_index('idx_high_risk_countries_category', 'high_risk_countries')\n    op.drop_index('idx_high_risk_countries_active', 'high_risk_countries')\n    \n    # Drop table\n    op.drop_table('high_risk_countries')\n\n# Create migration command script\ndef create_migration_script():\n    \"\"\"backend/scripts/run_aml_migration.py\"\"\"\n    import subprocess\n    import sys\n    \n    def run_migration():\n        try:\n            # Generate migration\n            subprocess.run([\n                'alembic', 'revision', '--autogenerate',\n                '-m', 'Add AML tables and indexes'\n            ], check=True)\n            \n            # Run migration\n            subprocess.run(['alembic', 'upgrade', 'head'], check=True)\n            \n            print(\"Migration completed successfully\")\n            \n        except subprocess.CalledProcessError as e:\n            print(f\"Migration failed: {e}\")\n            sys.exit(1)\n            \n    if __name__ == '__main__':\n        run_migration()\n```",
+        "testStrategy": "1. Test migration on development database copy\n2. Verify rollback (downgrade) works correctly\n3. Test indexes improve query performance\n4. Validate data integrity after migration\n5. Test migration with existing data present\n6. Verify all foreign key constraints are maintained",
+        "priority": "high",
+        "dependencies": [
+          "24"
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": "30",
+        "title": "Create Integration Tests and Documentation",
+        "description": "Develop comprehensive integration tests for the AML ingestion pipeline and create documentation for maintenance and operations",
+        "details": "Create test suite and documentation:\n\n```python\n# backend/tests/test_aml_integration.py\nimport pytest\nfrom unittest.mock import Mock, patch, MagicMock\nimport tempfile\nfrom pathlib import Path\nfrom sqlalchemy import create_engine\nfrom sqlalchemy.orm import sessionmaker\nfrom models import Base, Document, Chunk, HighRiskCountry\nfrom ingest_aml import AMLDocumentIngester\nfrom aml_documents import get_aml_documents\nfrom scrapers.aml_countries_scraper import AMLCountriesScraper\n\n@pytest.fixture\ndef test_db():\n    \"\"\"Create test database\"\"\"\n    engine = create_engine('sqlite:///:memory:')\n    Base.metadata.create_all(engine)\n    SessionLocal = sessionmaker(bind=engine)\n    session = SessionLocal()\n    yield session\n    session.close()\n    \n@pytest.fixture\ndef mock_pdf_content():\n    \"\"\"Create mock PDF for testing\"\"\"\n    return b'%PDF-1.4\\nMock AML regulation content\\nArticle 1: Test content'\n    \nclass TestAMLIngestion:\n    def test_document_download_with_arabic_url(self, test_db, mock_pdf_content):\n        \"\"\"Test downloading PDF with Arabic characters in URL\"\"\"\n        ingester = AMLDocumentIngester(test_db)\n        \n        with patch('requests.get') as mock_get:\n            mock_response = Mock()\n            mock_response.content = mock_pdf_content\n            mock_response.raise_for_status = Mock()\n            mock_get.return_value = mock_response\n            \n            url = 'https://example.com/اللائحة التنفيذية.pdf'\n            result = ingester.download_pdf(url, 'test.pdf')\n            \n            assert result is not None\n            assert result.exists()\n            \n    def test_duplicate_detection(self, test_db):\n        \"\"\"Test that duplicate documents are not re-ingested\"\"\"\n        # Insert existing document\n        existing_doc = Document(\n            title='Test Document',\n            source='aml.gov.sa',\n            source_url='https://test.com/doc.pdf'\n        )\n        test_db.add(existing_doc)\n        test_db.commit()\n        \n        ingester = AMLDocumentIngester(test_db)\n        assert ingester.check_duplicate('https://test.com/doc.pdf') == True\n        assert ingester.check_duplicate('https://test.com/new.pdf') == False\n        \n    def test_full_ingestion_pipeline(self, test_db, mock_pdf_content):\n        \"\"\"Test complete document ingestion process\"\"\"\n        ingester = AMLDocumentIngester(test_db)\n        \n        with patch.object(ingester, 'download_pdf') as mock_download:\n            mock_path = Path(tempfile.mktemp(suffix='.pdf'))\n            mock_path.write_bytes(mock_pdf_content)\n            mock_download.return_value = mock_path\n            \n            with patch('ingest.extract_text_from_pdf') as mock_extract:\n                mock_extract.return_value = 'Test document content'\n                \n                with patch('ingest.generate_embeddings') as mock_embed:\n                    mock_embed.return_value = [0.1] * 768\n                    \n                    doc_info = {\n                        'title': 'Test AML Document',\n                        'url': 'https://test.com/doc.pdf',\n                        'category': 'regulation',\n                        'filename': 'test.pdf'\n                    }\n                    \n                    result = ingester.ingest_document(doc_info)\n                    \n                    assert result['status'] == 'success'\n                    assert 'document_id' in result\n                    assert result['chunks_created'] > 0\n                    \n                    # Verify database records\n                    doc = test_db.query(Document).first()\n                    assert doc is not None\n                    assert doc.title == 'Test AML Document'\n                    \n                    chunks = test_db.query(Chunk).all()\n                    assert len(chunks) > 0\n                    \nclass TestHighRiskCountriesScraper:\n    def test_country_extraction(self, test_db):\n        \"\"\"Test extraction of countries from HTML\"\"\"\n        scraper = AMLCountriesScraper(test_db)\n        \n        mock_html = \"\"\"\n        <div class=\"high-risk-countries\">\n            <ul>\n                <li>إيران</li>\n                <li>كوريا الشمالية</li>\n            </ul>\n        </div>\n        <div class=\"monitoring-countries\">\n            <ul>\n                <li>باكستان</li>\n                <li>سوريا</li>\n            </ul>\n        </div>\n        \"\"\"\n        \n        with patch('requests.get') as mock_get:\n            mock_response = Mock()\n            mock_response.content = mock_html.encode('utf-8')\n            mock_get.return_value = mock_response\n            \n            countries = scraper.scrape_countries()\n            \n            assert len(countries) == 4\n            assert any(c['name'] == 'إيران' and c['category'] == 'high_risk' for c in countries)\n            assert any(c['name'] == 'باكستان' and c['category'] == 'under_monitoring' for c in countries)\n            \n    def test_database_update(self, test_db):\n        \"\"\"Test updating countries in database\"\"\"\n        scraper = AMLCountriesScraper(test_db)\n        \n        countries = [\n            {'name': 'Country A', 'category': 'high_risk'},\n            {'name': 'Country B', 'category': 'under_monitoring'}\n        ]\n        \n        scraper.update_database(countries)\n        \n        # Verify insertion\n        db_countries = test_db.query(HighRiskCountry).all()\n        assert len(db_countries) == 2\n        assert all(c.is_active for c in db_countries)\n\n# Create documentation\ndef create_documentation():\n    \"\"\"backend/docs/aml_integration.md\"\"\"\n    documentation = \"\"\"\n# AML.gov.sa Integration Documentation\n\n## Overview\nThis module integrates Saudi AML Authority (SAFIU) documents and data into the TAM Compliance AI system.\n\n## Components\n\n### 1. Document Ingestion (`ingest_aml.py`)\n- Downloads PDFs from aml.gov.sa\n- Handles Arabic URL encoding\n- Processes documents through existing RAG pipeline\n- Prevents duplicate ingestion\n\n### 2. High Risk Countries Scraper\n- Scrapes official high-risk jurisdictions list\n- Updates database with current country classifications\n- Runs as part of daily scheduled jobs\n\n### 3. API Endpoints\n- `POST /api/dashboard/ingest-aml`: Trigger manual ingestion (admin only)\n- `GET /api/dashboard/ingest-aml/{task_id}`: Check ingestion progress\n- `GET /api/dashboard/data-sources`: Get statistics for all sources\n\n## Configuration\n\n### Environment Variables\n```bash\n# No additional environment variables required\n# Uses existing database and embedding configurations\n```\n\n### Document Registry\nAll AML documents are defined in `aml_documents.py`:\n- 10 regulatory PDFs\n- Categories: regulation, guidance, report\n- Bilingual titles (Arabic/English)\n\n## Operations\n\n### Manual Ingestion\n1. Admin users can trigger ingestion from dashboard\n2. Progress is tracked in real-time\n3. Failed documents are logged but don't stop the process\n\n### Scheduled Updates\n- Daily scraping checks for new documents\n- High-risk countries list updated daily\n- Alerts created for new findings\n\n## Troubleshooting\n\n### Common Issues\n1. **SSL Certificate Errors**: Set verify=False for aml.gov.sa requests\n2. **Arabic URL Encoding**: URLs are properly encoded before requests\n3. **Large PDFs**: Timeout set to 60 seconds for downloads\n\n### Monitoring\n- Check dashboard for ingestion status\n- Review logs for failed documents\n- Monitor chunk creation in database\n\n## Testing\nRun integration tests:\n```bash\npytest tests/test_aml_integration.py -v\n```\n\n## Maintenance\n- Periodically verify all document URLs are still valid\n- Update document registry if new regulations published\n- Monitor disk space for temporary PDF downloads\n\"\"\"\n    \n    with open('backend/docs/aml_integration.md', 'w') as f:\n        f.write(documentation)\n```",
+        "testStrategy": "1. Run full integration test suite with coverage reporting\n2. Test each component in isolation with mocks\n3. Perform end-to-end testing on staging environment\n4. Load test with concurrent ingestion requests\n5. Validate documentation accuracy and completeness\n6. Test disaster recovery scenarios (partial failures)",
+        "priority": "low",
+        "dependencies": [
+          "21",
+          "22",
+          "23",
+          "24",
+          "25",
+          "26",
+          "27",
+          "28",
+          "29"
+        ],
+        "status": "pending",
+        "subtasks": []
       }
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-04-05T14:44:14.890Z",
-      "taskCount": 10,
-      "completedCount": 5,
+      "lastModified": "2026-04-05T15:19:11.304Z",
+      "taskCount": 20,
+      "completedCount": 10,
       "tags": [
         "master"
-      ],
-      "created": "2026-04-05T14:44:26.578Z",
-      "description": "Tasks for master context"
+      ]
     }
   }
 }
