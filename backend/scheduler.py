@@ -20,6 +20,17 @@ def daily_scrape_job():
         # After obligations are extracted, sync deadlines to the calendar
         deadlines_added = sync_obligations_to_deadlines()
         result["deadlines_added"] = deadlines_added
+
+        # AML scraping
+        try:
+            from scrape_aml import run_aml_scraper
+            aml_result = run_aml_scraper()
+            logger.info("AML scraper result: %s", aml_result)
+            result["aml_publications_found"] = aml_result.get("publications_found", 0)
+            result["high_risk_countries_updated"] = aml_result.get("countries_saved", 0)
+        except Exception:
+            logger.exception("AML scraper job failed")
+
         logger.info("=== Daily scraper job finished: %s ===", result)
         return result
     except Exception:

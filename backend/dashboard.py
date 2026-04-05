@@ -327,3 +327,80 @@ def scan_cma(user: dict = Depends(get_current_user)):
     except Exception as exc:
         logger.exception("Manual CMA scan failed")
         return JSONResponse(status_code=500, content={"detail": str(exc)})
+
+
+@router.post("/ingest-aml")
+def ingest_aml(user: dict = Depends(get_current_user)):
+    """Manually trigger AML document ingestion from aml.gov.sa."""
+    try:
+        from ingest_aml import run_aml_ingestion
+        result = run_aml_ingestion()
+        logger.info("Manual AML ingestion result: %s", result)
+        return {
+            "status": "ok",
+            "documents_ingested": result.get("documents_ingested", 0),
+            "chunks_created": result.get("chunks_created", 0),
+            "errors": result.get("errors", []),
+        }
+    except Exception as exc:
+        logger.exception("Manual AML ingestion failed")
+        return JSONResponse(status_code=500, content={"detail": str(exc)})
+
+
+@router.get("/sources")
+def get_data_sources(user: dict = Depends(get_current_user)):
+    """Return stats for all data sources (CMA, AML, etc.)."""
+    sources = []
+
+    # CMA source
+    cma_docs = supabase_admin.table("documents").select("id", count="exact").eq("source", "cma.gov.sa").execute()
+    cma_alerts = supabase_admin.table("alerts").select("id, created_at", count="exact").order("created_at", desc=True).limit(1).execute()
+
+    sources.append({
+        "name": "CMA",
+        "name_ar": "هيئة السوق المالية",
+        "domain": "cma.gov.sa",
+        "documents": cma_docs.count or 0,
+        "alerts": (supabase_admin.table("alerts").select("id", count="exact").execute()).count or 0,
+        "last_scan": cma_alerts.data[0]["created_at"] if cma_alerts.data else None,
+        "status": "active",
+    })
+
+    # AML source
+    aml_docs = supabase_admin.table("documents").select("id", count="exact").eq("source", "aml.gov.sa").execute()
+
+    # High risk countries count
+    try:
+        hrc = supabase_admin.table("high_risk_countries").select("id", count="exact").execute()
+        hrc_count = hrc.count or 0
+    except Exception:
+        hrc_count = 0
+
+    sources.append({
+        "name": "AML/SAFIU",
+        "name_ar": "الإدارة العامة للتحريات المالية",
+        "domain": "aml.gov.sa",
+        "documents": aml_docs.count or 0,
+        "high_risk_countries": hrc_count,
+        "last_scan": None,  # Will be populated once scraping runs
+        "status": "active",
+    })
+
+    return {"sources": sources}
+
+
+@router.post("/scan-aml")
+def scan_aml(user: dict = Depends(get_current_user)):
+    """Manually trigger AML.gov.sa scrape for new publications and high risk countries."""
+    try:
+        from scrape_aml import run_aml_scraper
+        result = run_aml_scraper()
+        logger.info("Manual AML scan result: %s", result)
+        return {
+            "status": "ok",
+            "new_publications": result.get("new_publications", 0),
+            "high_risk_countries_updated": result.get("high_risk_countries_updated", 0),
+        }
+    except Exception as exc:
+        logger.exception("Manual AML scan failed")
+        return JSONResponse(status_code=500, content={"detail": str(exc)})

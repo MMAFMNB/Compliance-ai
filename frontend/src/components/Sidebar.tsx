@@ -45,6 +45,7 @@ export default function Sidebar({
   const [conversations, setConversations] = useState<ConversationPreview[]>([]);
   const [userRole, setUserRole] = useState<string>("");
   const [scanning, setScanning] = useState(false);
+  const [scanningAml, setScanningAml] = useState(false);
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -72,6 +73,19 @@ export default function Sidebar({
       });
     } catch {} finally {
       setScanning(false);
+    }
+  };
+
+  const handleScanAml = async () => {
+    setScanningAml(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      await fetch(`${API_URL}/api/dashboard/scan-aml`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+    } catch {} finally {
+      setScanningAml(false);
     }
   };
 
@@ -116,6 +130,14 @@ export default function Sidebar({
         >
           <RefreshCw size={14} className={scanning ? "animate-spin" : ""} />
           <span>{scanning ? "جارٍ الفحص..." : "فحص تحديثات الهيئة"}</span>
+        </button>
+        <button
+          onClick={handleScanAml}
+          disabled={scanningAml}
+          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 disabled:opacity-50 transition-colors text-sm"
+        >
+          <RefreshCw size={14} className={scanningAml ? "animate-spin" : ""} />
+          <span>{scanningAml ? "جارٍ الفحص..." : "فحص تحديثات مكافحة غسل الأموال"}</span>
         </button>
       </div>
 

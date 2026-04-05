@@ -165,8 +165,8 @@ def build_rag_prompt(
         augmented_system = (
             f"{system_prompt}\n\n"
             "## Retrieved Regulatory Context\n\n"
-            "The following sections from CMA regulations have been retrieved as relevant to the user's query. "
-            "Use these as your PRIMARY source for answering. Cite the specific article/section for every claim.\n\n"
+            "The following sections from CMA regulations and AML/CTF regulations have been retrieved as relevant to the user's query. "
+            "Use these as your PRIMARY source for answering. Cite the specific regulation, article, and section for every claim.\n\n"
             f"{rag_context}"
         )
     else:

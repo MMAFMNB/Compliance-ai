@@ -677,9 +677,9 @@
         "testStrategy": "1. Unit test download_pdf with mock requests to verify Arabic URL encoding\n2. Test check_duplicate with mock database queries\n3. Integration test full ingestion pipeline with small test PDF\n4. Verify chunk creation and embedding generation\n5. Test error handling for network failures and invalid PDFs\n6. Validate deduplication logic prevents re-ingestion",
         "priority": "high",
         "dependencies": [],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [],
-        "updatedAt": "2026-04-05T15:18:44.388Z"
+        "updatedAt": "2026-04-05T15:23:43.138Z"
       },
       {
         "id": "22",
@@ -689,9 +689,9 @@
         "testStrategy": "1. Validate all URLs are properly formatted and accessible\n2. Test Arabic text encoding in titles\n3. Verify unique filenames for each document\n4. Test get_aml_documents returns correct structure\n5. Validate categories match expected values (regulation/guidance/report)",
         "priority": "high",
         "dependencies": [],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [],
-        "updatedAt": "2026-04-05T15:18:57.756Z"
+        "updatedAt": "2026-04-05T15:23:52.081Z"
       },
       {
         "id": "23",
@@ -704,8 +704,9 @@
           "21",
           "22"
         ],
-        "status": "pending",
-        "subtasks": []
+        "status": "in-progress",
+        "subtasks": [],
+        "updatedAt": "2026-04-05T15:26:55.702Z"
       },
       {
         "id": "24",
@@ -715,9 +716,9 @@
         "testStrategy": "1. Mock HTML response to test parsing logic\n2. Test extraction of both high risk and monitoring categories\n3. Verify database update marks old entries as inactive\n4. Test handling of duplicate countries\n5. Validate error handling for network failures\n6. Test get_active_countries returns only current data",
         "priority": "medium",
         "dependencies": [],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [],
-        "updatedAt": "2026-04-05T15:19:11.302Z"
+        "updatedAt": "2026-04-05T15:23:59.748Z"
       },
       {
         "id": "25",
@@ -729,8 +730,9 @@
         "dependencies": [
           "24"
         ],
-        "status": "pending",
-        "subtasks": []
+        "status": "in-progress",
+        "subtasks": [],
+        "updatedAt": "2026-04-05T15:27:04.166Z"
       },
       {
         "id": "26",
@@ -755,8 +757,9 @@
         "dependencies": [
           "21"
         ],
-        "status": "pending",
-        "subtasks": []
+        "status": "in-progress",
+        "subtasks": [],
+        "updatedAt": "2026-04-05T15:27:12.362Z"
       },
       {
         "id": "28",
@@ -768,8 +771,9 @@
         "dependencies": [
           "21"
         ],
-        "status": "pending",
-        "subtasks": []
+        "status": "in-progress",
+        "subtasks": [],
+        "updatedAt": "2026-04-05T15:27:21.694Z"
       },
       {
         "id": "29",
@@ -781,8 +785,9 @@
         "dependencies": [
           "24"
         ],
-        "status": "pending",
-        "subtasks": []
+        "status": "done",
+        "subtasks": [],
+        "updatedAt": "2026-04-05T15:27:29.807Z"
       },
       {
         "id": "30",
@@ -808,9 +813,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-04-05T15:19:11.304Z",
+      "lastModified": "2026-04-05T15:27:29.809Z",
       "taskCount": 20,
-      "completedCount": 10,
+      "completedCount": 14,
       "tags": [
         "master"
       ]
