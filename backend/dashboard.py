@@ -311,10 +311,14 @@ def get_stat_detail(
 
 @router.post("/scan-cma")
 def scan_cma(user: dict = Depends(get_current_user)):
-    """Manually trigger a CMA scrape for new updates, circulars, and regulations."""
+    """Manually trigger a CMA scrape for new updates, circulars, and regulations.
+
+    Skips AI-powered parsing to avoid Railway HTTP timeout (30s).
+    Parsing runs in the daily scheduler job instead.
+    """
     try:
         from scraper import run_scraper
-        result = run_scraper(parse_circulars=True)
+        result = run_scraper(parse_circulars=False)
         logger.info("Manual CMA scan result: %s", result)
         return {
             "status": "ok",
@@ -322,7 +326,6 @@ def scan_cma(user: dict = Depends(get_current_user)):
             "circulars_found": result.get("circulars_found", 0),
             "regulations_found": result.get("regulations_found", 0),
             "total_saved": result.get("total_saved", 0),
-            "obligations_extracted": result.get("obligations_extracted", 0),
         }
     except Exception as exc:
         logger.exception("Manual CMA scan failed")
