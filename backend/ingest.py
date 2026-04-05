@@ -229,12 +229,13 @@ def embed_query(query: str) -> list[float]:
 
 def store_document(
     title: str,
-    title_en: str | None,
     doc_type: str,
-    source_url: str | None,
-    amendment_date: str | None,
-    file_path: str | None,
     language: str,
+    title_en: str | None = None,
+    source_url: str | None = None,
+    amendment_date: str | None = None,
+    file_path: str | None = None,
+    source: str = "cma.gov.sa",
 ) -> str:
     """Create a document record and return its ID."""
     doc_id = str(uuid.uuid4())
@@ -247,6 +248,7 @@ def store_document(
         "amendment_date": amendment_date,
         "file_path": file_path,
         "language": language,
+        "source": source,
     }).execute()
     return doc_id
 

@@ -205,12 +205,11 @@ def ingest_single_document(doc: dict) -> dict:
         # Store document record
         doc_id = store_document(
             title=doc["title"],
-            title_en=title_en,
             doc_type=doc["doc_type"],
-            source_url=source_url,
-            amendment_date=None,
-            file_path=None,
             language=language,
+            title_en=title_en,
+            source_url=source_url,
+            source=doc.get("source", "aml.gov.sa"),
         )
 
         # Store chunks with embeddings

@@ -73,18 +73,11 @@ def upload_policy(
         title = os.path.splitext(file.filename)[0]
         doc_id = store_document(
             title=title,
-            title_en=title,
             doc_type="policy",
-            source_url=None,
-            amendment_date=None,
-            file_path=None,
             language=language,
+            title_en=title,
+            source=TAM_POLICIES_SOURCE,
         )
-
-        # Set source to tam_policies
-        supabase_admin.table("documents").update(
-            {"source": TAM_POLICIES_SOURCE}
-        ).eq("id", doc_id).execute()
 
         # Store chunks
         stored = store_chunks(doc_id, chunks, embeddings)
