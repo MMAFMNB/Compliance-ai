@@ -1,10 +1,14 @@
 """Dashboard API: stats, audit trail, and reporting."""
 
+import logging
 from fastapi import APIRouter, Depends, Query
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from auth import get_current_user
 from database import supabase_admin
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
 
@@ -303,3 +307,23 @@ def get_stat_detail(
         return {"items": [], "error": "Unknown stat type"}
 
     return {"items": items}
+
+
+@router.post("/scan-cma")
+def scan_cma(user: dict = Depends(get_current_user)):
+    """Manually trigger a CMA scrape for new updates, circulars, and regulations."""
+    try:
+        from scraper import run_scraper
+        result = run_scraper(parse_circulars=True)
+        logger.info("Manual CMA scan result: %s", result)
+        return {
+            "status": "ok",
+            "news_found": result.get("news_found", 0),
+            "circulars_found": result.get("circulars_found", 0),
+            "regulations_found": result.get("regulations_found", 0),
+            "total_saved": result.get("total_saved", 0),
+            "obligations_extracted": result.get("obligations_extracted", 0),
+        }
+    except Exception as exc:
+        logger.exception("Manual CMA scan failed")
+        return JSONResponse(status_code=500, content={"detail": str(exc)})

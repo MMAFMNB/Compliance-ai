@@ -15,7 +15,9 @@ import {
   Shield,
   Building2,
   Brain,
+  RefreshCw,
 } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/AuthContext";
 import {
   getConversations,
@@ -42,6 +44,9 @@ export default function Sidebar({
   const { user, signOut } = useAuth();
   const [conversations, setConversations] = useState<ConversationPreview[]>([]);
   const [userRole, setUserRole] = useState<string>("");
+  const [scanning, setScanning] = useState(false);
+
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
   useEffect(() => {
     getConversations()
@@ -56,6 +61,19 @@ export default function Sidebar({
         .catch(() => {});
     }
   }, [user]);
+
+  const handleScanCMA = async () => {
+    setScanning(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      await fetch(`${API_URL}/api/dashboard/scan-cma`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+    } catch {} finally {
+      setScanning(false);
+    }
+  };
 
   const handleDelete = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
@@ -83,13 +101,21 @@ export default function Sidebar({
       </div>
 
       {/* New Chat Button */}
-      <div className="p-3">
+      <div className="p-3 space-y-2">
         <button
           onClick={onNewChat}
           className="w-full flex items-center gap-2 px-3 py-2 rounded-lg border border-white/20 hover:bg-white/10 transition-colors text-sm"
         >
           <Plus size={16} />
           <span>محادثة جديدة</span>
+        </button>
+        <button
+          onClick={handleScanCMA}
+          disabled={scanning}
+          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-tam-gold/20 text-tam-gold hover:bg-tam-gold/30 disabled:opacity-50 transition-colors text-sm"
+        >
+          <RefreshCw size={14} className={scanning ? "animate-spin" : ""} />
+          <span>{scanning ? "جارٍ الفحص..." : "فحص تحديثات الهيئة"}</span>
         </button>
       </div>
 

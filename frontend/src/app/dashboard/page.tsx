@@ -15,6 +15,9 @@ import {
   Clock,
   ChevronDown,
   ChevronUp,
+  RefreshCw,
+  CheckCircle,
+  AlertTriangle,
 } from "lucide-react";
 import { useRequireAuth } from "@/lib/useRequireAuth";
 import { supabase } from "@/lib/supabase";
@@ -53,6 +56,8 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [audit, setAudit] = useState<AuditEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [scanning, setScanning] = useState(false);
+  const [scanResult, setScanResult] = useState<{ total_saved: number; news_found: number; circulars_found: number; regulations_found: number } | null>(null);
 
   useEffect(() => {
     if (user) fetchData();
@@ -77,6 +82,28 @@ export default function DashboardPage() {
       console.error("Failed to fetch dashboard:", err);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleScanCMA = async () => {
+    setScanning(true);
+    setScanResult(null);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(`${API_URL}/api/dashboard/scan-cma`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setScanResult(data);
+        // Refresh dashboard stats after scan
+        fetchData();
+      }
+    } catch (err) {
+      console.error("CMA scan failed:", err);
+    } finally {
+      setScanning(false);
     }
   };
 
@@ -122,6 +149,38 @@ export default function DashboardPage() {
 
         {!isLoading && stats && (
           <>
+            {/* CMA Scan Button */}
+            <div className="mb-6 flex items-center gap-4 flex-wrap">
+              <button
+                onClick={handleScanCMA}
+                disabled={scanning}
+                className="flex items-center gap-2 px-4 py-2.5 bg-tam-primary text-white rounded-lg text-sm font-medium hover:bg-tam-primary/90 disabled:opacity-60 transition-all"
+              >
+                <RefreshCw size={16} className={scanning ? "animate-spin" : ""} />
+                {scanning ? "جارٍ الفحص..." : "فحص تحديثات هيئة السوق المالية"}
+              </button>
+              {scanResult && (
+                <div className="flex items-center gap-2 text-xs bg-white border border-slate-200 rounded-lg px-3 py-2">
+                  {scanResult.total_saved > 0 ? (
+                    <>
+                      <AlertTriangle size={14} className="text-amber-500" />
+                      <span className="text-slate-700">
+                        {scanResult.total_saved} تحديث جديد
+                        <span className="text-slate-400 mr-2">
+                          ({scanResult.news_found} أخبار، {scanResult.circulars_found} تعاميم، {scanResult.regulations_found} أنظمة)
+                        </span>
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle size={14} className="text-emerald-500" />
+                      <span className="text-slate-600">لا توجد تحديثات جديدة</span>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
               <StatCard icon={<MessageSquare size={16} />} label="المحادثات" value={stats.total_conversations} color="text-tam-light" statType="conversations" />
               <StatCard icon={<MessageSquare size={16} />} label="الرسائل" value={stats.total_messages} color="text-tam-accent" statType="messages" />

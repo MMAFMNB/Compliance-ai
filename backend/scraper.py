@@ -330,16 +330,13 @@ def run_scraper(parse_circulars: bool = True) -> dict:
     }
 
     if parse_circulars and saved > 0:
-        # Step 2: Generate impact summaries for new alerts
-        from alerts import process_unprocessed_alerts
-        processed = process_unprocessed_alerts()
-        result["impact_summaries_generated"] = processed
-        logger.info("Generated %d impact summaries", processed)
-
-        # Step 3: Parse circulars for obligations
-        from circular_parser import process_unparsed_alerts
-        parse_result = process_unparsed_alerts()
-        result["obligations_extracted"] = parse_result["total_obligations"]
-        logger.info("Extracted %d obligations", parse_result["total_obligations"])
+        # Parse circulars for obligations
+        try:
+            from circular_parser import process_unparsed_alerts
+            parse_result = process_unparsed_alerts()
+            result["obligations_extracted"] = parse_result["total_obligations"]
+            logger.info("Extracted %d obligations", parse_result["total_obligations"])
+        except Exception:
+            logger.exception("Failed to parse obligations")
 
     return result
