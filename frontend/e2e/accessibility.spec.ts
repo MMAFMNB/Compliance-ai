@@ -57,18 +57,10 @@ test.describe("Accessibility - authenticated pages", () => {
   const authenticatedPages = [
     { name: "Chat (home)", path: "/" },
     { name: "Dashboard", path: "/dashboard" },
-    { name: "Search", path: "/search" },
-    { name: "Alerts", path: "/alerts" },
     { name: "Calendar", path: "/calendar" },
     { name: "Review", path: "/review" },
     { name: "DocGen", path: "/docgen" },
-    { name: "Checklist", path: "/checklist" },
-    { name: "Self-Assessment", path: "/self-assessment" },
-    { name: "AML", path: "/aml" },
-    { name: "Suitability", path: "/suitability" },
-    { name: "Impact Analysis", path: "/impact-analysis" },
     { name: "Learning", path: "/learning" },
-    { name: "Regulatory", path: "/regulatory" },
     { name: "Admin", path: "/admin" },
     { name: "Firm Admin", path: "/firm-admin" },
   ];

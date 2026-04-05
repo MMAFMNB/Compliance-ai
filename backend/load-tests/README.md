@@ -56,7 +56,7 @@ k6 run -e BASE_URL=https://web-production-4cf15.up.railway.app health.js
 
 ### With a real JWT token (required for authenticated endpoints)
 
-For endpoints that require authentication (`/api/alerts`, `/api/search`, `/api/calendar/deadlines`), you need a valid Supabase JWT token. Without one, those endpoints will return 401 responses.
+For endpoints that require authentication (`/api/calendar/deadlines`, `/api/review`, etc.), you need a valid Supabase JWT token. Without one, those endpoints will return 401 responses.
 
 ```bash
 # Set via environment variable
@@ -96,9 +96,8 @@ Tests define pass/fail thresholds. If a threshold is breached, k6 exits with a n
 The stress test tracks per-endpoint response times as custom trends:
 
 - **health_duration** -- Response time for GET /
-- **alerts_duration** -- Response time for GET /api/alerts
 
-These help identify which endpoint degrades first under load.
+This helps identify endpoint degradation under load.
 
 ## Tips
 

@@ -34,33 +34,6 @@ export default function () {
 
   sleep(0.5);
 
-  group('Alerts', () => {
-    const res = http.get(`${BASE_URL}/api/alerts`, authHeaders);
-    check(res, {
-      'GET /api/alerts status is 200 or 401': (r) =>
-        r.status === 200 || r.status === 401,
-      'GET /api/alerts response time < 2000ms': (r) =>
-        r.timings.duration < 2000,
-    });
-  });
-
-  sleep(0.5);
-
-  group('Search', () => {
-    const res = http.get(
-      `${BASE_URL}/api/search?q=compliance`,
-      authHeaders
-    );
-    check(res, {
-      'GET /api/search status is 200 or 401': (r) =>
-        r.status === 200 || r.status === 401,
-      'GET /api/search response time < 2000ms': (r) =>
-        r.timings.duration < 2000,
-    });
-  });
-
-  sleep(0.5);
-
   group('Calendar Deadlines', () => {
     const res = http.get(
       `${BASE_URL}/api/calendar/deadlines`,

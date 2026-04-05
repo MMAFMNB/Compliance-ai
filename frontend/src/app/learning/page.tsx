@@ -838,10 +838,6 @@ function AccuracyTab() {
     "chat",
     "review",
     "docgen",
-    "checklist",
-    "assessment",
-    "aml",
-    "suitability",
   ];
 
   return (

@@ -14,7 +14,7 @@ from database import supabase_admin
 router = APIRouter(prefix="/api/feedback", tags=["feedback"])
 logger = logging.getLogger(__name__)
 
-VALID_FEATURES = {"chat", "review", "docgen", "impact_analysis", "checklist", "assessment", "obligations"}
+VALID_FEATURES = {"chat", "review", "docgen", "obligations"}
 VALID_RATINGS = {"approved", "needs_edit", "rejected"}
 
 

@@ -26,7 +26,7 @@ class DashboardStats(BaseModel):
 
 class AuditEntry(BaseModel):
     id: str
-    type: str  # "chat", "review", "search"
+    type: str  # "chat", "review"
     summary: str
     created_at: str
 

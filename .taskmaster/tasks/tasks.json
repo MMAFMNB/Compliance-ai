@@ -2,149 +2,258 @@
   "master": {
     "tasks": [
       {
-        "id": "1",
-        "title": "Environment Setup and Configuration",
-        "description": "Set up local development environment with backend (FastAPI/Railway) and frontend (Next.js) running together, configure all environment variables from .env.example files",
-        "details": "1. Clone both backend and frontend repositories\n2. Install dependencies:\n   - Backend: `pip install -r requirements.txt`\n   - Frontend: `npm install`\n3. Configure .env files:\n   - Backend: Copy .env.example to .env, set SUPABASE_URL, SUPABASE_KEY, ANTHROPIC_API_KEY\n   - Frontend: Copy .env.example to .env.local, set NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, NEXT_PUBLIC_API_URL\n4. Start services:\n   - Backend: `uvicorn main:app --reload --port 8000`\n   - Frontend: `npm run dev`\n5. Verify connectivity between frontend and backend\n6. Document any missing dependencies or configuration issues",
-        "testStrategy": "Verify both services start without errors, frontend can make API calls to backend, Supabase connection works, and Anthropic API key is valid by making a test call",
+        "id": "11",
+        "title": "Clean Up Orphaned References and Dead Code",
+        "description": "Remove all references to deleted features from codebase including backend modules, frontend components, and test files",
+        "details": "1. Update backend/feedback.py and backend/accuracy_tracking.py:\n```python\n# Remove from VALID_FEATURES list:\n# 'regulation_search', 'alerts', 'impact_analysis', 'compliance_checklist',\n# 'self_assessment', 'aml_case_manager', 'suitability_assessment', 'regulatory_intelligence'\n```\n2. Update frontend/src/app/learning/page.tsx feature filter to remove deleted features\n3. Fix dashboard.py comment referencing AuditEntry type\n4. Delete orphaned test files:\n   - backend/tests/test_alerts.py\n   - backend/tests/test_search.py\n   - e2e tests: alerts.spec.ts, search.spec.ts\n5. Update backend/tests/conftest.py to remove deleted feature fixtures\n6. Clean backend/load-tests/ files removing deleted endpoint references",
+        "testStrategy": "Run grep searches for deleted feature names across codebase to ensure complete removal. Verify all imports resolve correctly. Run linter to catch any broken references.",
         "priority": "high",
         "dependencies": [],
-        "status": "done",
-        "subtasks": [],
-        "updatedAt": "2026-03-30T13:51:17.169Z"
+        "status": "in-progress",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Clean up backend Python modules",
+            "description": "Remove references to deleted features from backend Python files including feedback.py and accuracy_tracking.py",
+            "dependencies": [],
+            "details": "Update backend/feedback.py and backend/accuracy_tracking.py to remove 'regulation_search', 'alerts', 'impact_analysis', 'compliance_checklist', 'self_assessment', 'aml_case_manager', 'suitability_assessment', 'regulatory_intelligence' from VALID_FEATURES list. Also fix dashboard.py comment referencing AuditEntry type.",
+            "status": "pending",
+            "testStrategy": "Run Python linter to ensure no import errors. Execute unit tests for feedback and accuracy_tracking modules to verify they still function correctly without deleted features.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 2,
+            "title": "Update frontend feature filters",
+            "description": "Remove deleted features from frontend components, particularly the learning page feature filter",
+            "dependencies": [],
+            "details": "Update frontend/src/app/learning/page.tsx to remove references to deleted features from the feature filter dropdown or list. Ensure the UI component renders correctly without these options.",
+            "status": "pending",
+            "testStrategy": "Run frontend build to catch any TypeScript errors. Manually verify the learning page loads without errors and deleted features are not visible in the UI.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 3,
+            "title": "Delete orphaned test files",
+            "description": "Remove test files for deleted features including backend unit tests and e2e tests",
+            "dependencies": [],
+            "details": "Delete backend/tests/test_alerts.py, backend/tests/test_search.py, and e2e test files alerts.spec.ts and search.spec.ts. These files test features that no longer exist in the codebase.",
+            "status": "pending",
+            "testStrategy": "Run full test suite after deletion to ensure no other tests depend on these files. Verify test runner doesn't report missing test files.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 4,
+            "title": "Clean up test fixtures and configuration",
+            "description": "Update test configuration files to remove fixtures and references to deleted features",
+            "dependencies": [
+              3
+            ],
+            "details": "Update backend/tests/conftest.py to remove any pytest fixtures related to deleted features. This includes removing fixture functions for alerts, search, impact analysis, compliance checklist, self assessment, AML case manager, suitability assessment, and regulatory intelligence.",
+            "status": "pending",
+            "testStrategy": "Run pytest with verbose output to ensure all fixtures load correctly. Check that no tests fail due to missing fixtures.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 5,
+            "title": "Clean load test files",
+            "description": "Remove references to deleted endpoints from load testing scripts",
+            "dependencies": [],
+            "details": "Update all files in backend/load-tests/ directory to remove any references to deleted feature endpoints. This includes removing test scenarios for regulation search, alerts, impact analysis, compliance checklist, self assessment, AML case manager, suitability assessment, and regulatory intelligence endpoints.",
+            "status": "pending",
+            "testStrategy": "Run grep searches for each deleted feature name across the entire codebase to ensure complete removal. Execute a sample load test to verify scripts run without errors.",
+            "parentId": "undefined"
+          }
+        ],
+        "updatedAt": "2026-04-05T14:26:36.936Z"
       },
       {
-        "id": "2",
-        "title": "Authentication Flow Testing and Fixes",
-        "description": "Test and fix the complete authentication flow including login, session management, and logout using existing auth.py and auth_routes.py modules",
-        "details": "1. Test login flow:\n   - POST /auth/login with email/password\n   - Verify JWT token generation\n   - Check Supabase session creation\n2. Test session management:\n   - Verify token validation middleware\n   - Check token refresh mechanism\n   - Test protected route access\n3. Test logout:\n   - POST /auth/logout\n   - Verify session cleanup\n4. Fix any issues found:\n   - Update auth middleware if needed\n   - Fix CORS issues between frontend/backend\n   - Ensure proper error handling\n5. Update frontend auth context to handle all states",
-        "testStrategy": "Create test user in Supabase, perform full login/logout cycle, verify protected routes return 401 without token, verify token refresh works after expiry",
+        "id": "12",
+        "title": "Audit and Verify Database Schema",
+        "description": "Validate all required tables exist in live Supabase instance and document current state",
+        "details": "1. Connect to live Supabase instance and run schema inspection:\n```sql\nSELECT table_name FROM information_schema.tables \nWHERE table_schema = 'public' ORDER BY table_name;\n```\n2. Compare against expected 28 tables from migrations\n3. For each table, check row counts:\n```sql\nSELECT 'table_name' as table, COUNT(*) as row_count FROM table_name;\n```\n4. Verify RLS policies exist:\n```sql\nSELECT tablename, policyname FROM pg_policies WHERE schemaname = 'public';\n```\n5. Document findings in a database_audit.md file\n6. Run any missing migrations using Supabase CLI if needed",
+        "testStrategy": "Create automated script to verify schema matches expected structure. Test RLS policies by attempting cross-firm data access. Verify foreign key constraints are enforced.",
+        "priority": "high",
+        "dependencies": [],
+        "status": "in-progress",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Connect to Supabase and Inspect Schema",
+            "description": "Establish connection to live Supabase instance and run schema inspection queries",
+            "dependencies": [],
+            "details": "Connect to the live Supabase instance using appropriate credentials. Execute the schema inspection SQL query to retrieve all table names in the public schema. Store the results for comparison against expected tables.",
+            "status": "pending",
+            "testStrategy": "Verify connection succeeds and query returns results. Test with read-only credentials to ensure no accidental modifications.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 2,
+            "title": "Compare Tables Against Expected Schema",
+            "description": "Compare discovered tables with the expected 28 tables from migrations",
+            "dependencies": [
+              1
+            ],
+            "details": "Create a list of the 28 expected tables from the migration files. Compare this list against the tables found in step 1. Identify any missing tables or unexpected additional tables. Document discrepancies.",
+            "status": "pending",
+            "testStrategy": "Use automated comparison script to detect differences. Verify script correctly identifies both missing and extra tables.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 3,
+            "title": "Verify Row Counts for All Tables",
+            "description": "Check row counts for each table to understand data population status",
+            "dependencies": [
+              1
+            ],
+            "details": "For each table discovered, execute COUNT(*) queries to determine row counts. Pay special attention to critical tables like users, firms, documents, etc. Identify empty tables that may need seeding.",
+            "status": "pending",
+            "testStrategy": "Ensure count queries complete without timeout. Verify counts are reasonable (no negative or extremely large values).",
+            "parentId": "undefined"
+          },
+          {
+            "id": 4,
+            "title": "Audit RLS Policies and Security",
+            "description": "Verify Row Level Security policies exist and are properly configured",
+            "dependencies": [
+              1
+            ],
+            "details": "Query pg_policies to list all RLS policies in the public schema. Verify each table has appropriate policies for SELECT, INSERT, UPDATE, DELETE operations. Check that policies enforce proper firm-level data isolation.",
+            "status": "pending",
+            "testStrategy": "Test RLS by attempting cross-firm data access with different user contexts. Verify policies block unauthorized access.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 5,
+            "title": "Document Findings and Run Missing Migrations",
+            "description": "Create comprehensive audit report and apply any missing database changes",
+            "dependencies": [
+              2,
+              3,
+              4
+            ],
+            "details": "Create database_audit.md file documenting all findings including table list, row counts, missing tables, and RLS policy status. If any migrations are missing, use Supabase CLI to apply them. Include remediation steps for any issues found.",
+            "status": "pending",
+            "testStrategy": "Verify markdown file is properly formatted and readable. Test migration rollback/forward if changes are needed.",
+            "parentId": "undefined"
+          }
+        ],
+        "updatedAt": "2026-04-05T14:26:46.773Z"
+      },
+      {
+        "id": "13",
+        "title": "Fix Regulatory Chat Feature End-to-End",
+        "description": "Ensure chat feature works completely from UI through RAG retrieval to response streaming",
+        "details": "1. Verify frontend chat page loads without errors\n2. Test conversation creation API:\n```python\n# POST /api/chat/conversations\n# Verify conversation saved to conversations table\n```\n3. Test message sending with streaming:\n```python\n# POST /api/chat/messages\n# Verify RAG retrieval from chunks table\n# Verify embeddings similarity search works\n# Verify streaming response returns\n```\n4. Fix any issues with conversation history loading\n5. Test conversation deletion\n6. Seed chunks table with CMA regulatory content if empty:\n```python\n# Use existing CMA PDFs to populate chunks and embeddings\n```",
+        "testStrategy": "Create e2e test that creates conversation, sends CMA-specific question, verifies RAG retrieval occurs, and validates streamed response. Test with multiple concurrent users for streaming stability.",
         "priority": "high",
         "dependencies": [
-          "1"
+          "12"
         ],
-        "status": "done",
-        "subtasks": [],
-        "updatedAt": "2026-03-30T14:08:48.675Z"
+        "status": "pending",
+        "subtasks": []
       },
       {
-        "id": "3",
-        "title": "Core Features End-to-End Testing",
-        "description": "Systematically test all 5 core features (Calendar, Document Generator, Impact Analysis, Checklist, Self-Assessment) and fix bugs",
-        "details": "1. Compliance Calendar (calendar_routes.py):\n   - Create deadline: POST /calendar/deadlines\n   - Edit deadline: PUT /calendar/deadlines/{id}\n   - Delete: DELETE /calendar/deadlines/{id}\n   - List: GET /calendar/deadlines\n2. Document Generator (docgen.py):\n   - Generate document: POST /documents/generate\n   - Test with sample compliance template\n   - Verify PDF/DOCX output\n3. Impact Analysis (impact_analysis.py):\n   - Analyze change: POST /impact-analysis/analyze\n   - Test with sample regulatory text\n4. Checklist (checklist.py):\n   - Create: POST /checklists\n   - Update items: PUT /checklists/{id}/items\n   - Gap analysis: GET /checklists/{id}/gaps\n5. Self-Assessment (self_assessment.py):\n   - Create: POST /self-assessments\n   - Submit: POST /self-assessments/{id}/submit\n   - View results: GET /self-assessments/{id}/results\n6. Fix all discovered bugs and update error handling",
-        "testStrategy": "Create automated test suite using pytest for backend APIs, manual testing for frontend flows, document all bugs found and fixes applied",
+        "id": "14",
+        "title": "Fix Document Review Feature End-to-End",
+        "description": "Ensure PDF upload, review processing, and results display work completely",
+        "details": "1. Test PDF upload endpoint:\n```python\n# POST /api/documents/upload\n# Verify file saved to storage\n# Verify document record created\n```\n2. Test review generation:\n```python\n# POST /api/documents/{id}/review\n# Verify AI analysis runs\n# Verify findings saved to document_reviews table\n```\n3. Fix frontend review display component\n4. Ensure reviews appear in dashboard stats:\n```sql\nSELECT COUNT(*) FROM document_reviews WHERE firm_id = ?\n```\n5. Add review to audit trail entries\n6. Handle edge cases: large PDFs, non-English content, corrupted files",
+        "testStrategy": "Upload test PDFs of various sizes and types. Verify each step saves correctly to database. Test concurrent uploads. Verify dashboard stats update in real-time.",
         "priority": "high",
         "dependencies": [
-          "2"
+          "12"
         ],
-        "status": "done",
-        "subtasks": [],
-        "updatedAt": "2026-03-30T14:19:20.537Z"
+        "status": "pending",
+        "subtasks": []
       },
       {
-        "id": "4",
-        "title": "Admin Data Model and Database Schema",
-        "description": "Design and implement the complete admin data model in Supabase with proper relationships for SuperAdmin, FirmAdmin, and User roles",
-        "details": "1. Create Supabase tables using SQL migrations:\n```sql\n-- Firms table\nCREATE TABLE firms (\n  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n  name VARCHAR(255) NOT NULL,\n  name_ar VARCHAR(255),\n  cma_license VARCHAR(100),\n  is_active BOOLEAN DEFAULT true,\n  created_at TIMESTAMPTZ DEFAULT NOW()\n);\n\n-- Roles enum\nCREATE TYPE user_role AS ENUM ('super_admin', 'firm_admin', 'compliance_officer', 'analyst', 'auditor', 'read_only');\n\n-- Users extension\nALTER TABLE auth.users ADD COLUMN firm_id UUID REFERENCES firms(id);\nALTER TABLE auth.users ADD COLUMN role user_role DEFAULT 'read_only';\n\n-- Audit log\nCREATE TABLE audit_log (\n  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n  user_id UUID REFERENCES auth.users(id),\n  action VARCHAR(100),\n  resource_type VARCHAR(50),\n  resource_id UUID,\n  ip_address INET,\n  user_agent TEXT,\n  created_at TIMESTAMPTZ DEFAULT NOW()\n);\n\n-- Usage events\nCREATE TABLE usage_events (\n  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n  user_id UUID REFERENCES auth.users(id),\n  firm_id UUID REFERENCES firms(id),\n  event_type VARCHAR(50),\n  metadata JSONB,\n  created_at TIMESTAMPTZ DEFAULT NOW()\n);\n```\n2. Set up Row Level Security (RLS) policies\n3. Create database functions for role checks\n4. Add indexes for performance",
-        "testStrategy": "Run migrations in test environment, verify foreign key constraints work, test RLS policies prevent cross-firm data access, verify cascade deletes work properly",
-        "priority": "high",
-        "dependencies": [
-          "3"
-        ],
-        "status": "done",
-        "subtasks": [],
-        "updatedAt": "2026-03-30T14:30:08.329Z"
-      },
-      {
-        "id": "5",
-        "title": "Backend Admin Routes and RBAC Middleware",
-        "description": "Build comprehensive admin API routes with role-based access control middleware to manage firms, users, and track usage",
-        "details": "1. Create admin_routes.py with endpoints:\n```python\n# Super Admin routes\n@router.post('/admin/firms')\nasync def create_firm(firm: FirmCreate, user: User = Depends(require_super_admin)):\n    # Create firm logic\n\n@router.get('/admin/firms')\nasync def list_firms(user: User = Depends(require_super_admin)):\n    # List all firms\n\n@router.put('/admin/firms/{firm_id}/deactivate')\nasync def deactivate_firm(firm_id: UUID, user: User = Depends(require_super_admin)):\n    # Deactivate firm\n\n# Firm Admin routes\n@router.post('/admin/users/invite')\nasync def invite_user(invite: UserInvite, user: User = Depends(require_firm_admin)):\n    # Send invitation email\n\n@router.put('/admin/users/{user_id}/role')\nasync def update_user_role(user_id: UUID, role: UserRole, user: User = Depends(require_firm_admin)):\n    # Update user role\n\n# Usage tracking\n@router.get('/admin/usage/summary')\nasync def usage_summary(user: User = Depends(require_admin)):\n    # Return usage statistics\n```\n2. Implement RBAC middleware:\n```python\ndef require_role(allowed_roles: List[UserRole]):\n    async def role_checker(user: User = Depends(get_current_user)):\n        if user.role not in allowed_roles:\n            raise HTTPException(403, 'Insufficient permissions')\n        return user\n    return role_checker\n```\n3. Add audit logging decorator\n4. Implement usage tracking middleware",
-        "testStrategy": "Test each endpoint with different user roles, verify 403 errors for unauthorized access, verify audit logs are created for all admin actions",
-        "priority": "high",
-        "dependencies": [
-          "4"
-        ],
-        "status": "done",
-        "subtasks": [],
-        "updatedAt": "2026-03-30T14:37:33.089Z"
-      },
-      {
-        "id": "6",
-        "title": "Admin Frontend Panels",
-        "description": "Build bilingual (Arabic/English) admin panels for Super Admin and Firm Admin with full user and firm management capabilities",
-        "details": "1. Create /admin route for Super Admin:\n```typescript\n// pages/admin/index.tsx\n- Firms list with DataTable component\n- Create firm modal with bilingual form\n- Firm details page with users list\n- Usage dashboard with charts (Chart.js)\n```\n2. Create /firm-admin route for Firm Admin:\n```typescript\n// pages/firm-admin/index.tsx\n- Users list with role badges\n- Invite user form with email validation\n- User detail page with activity log\n- Role management dropdown\n```\n3. Implement bilingual support:\n```typescript\n// i18n/admin.ts\nexport const adminTranslations = {\n  en: {\n    firms: 'Firms',\n    createFirm: 'Create Firm',\n    users: 'Users',\n    inviteUser: 'Invite User'\n  },\n  ar: {\n    firms: 'الشركات',\n    createFirm: 'إنشاء شركة',\n    users: 'المستخدمون',\n    inviteUser: 'دعوة مستخدم'\n  }\n}\n```\n4. Add RTL support for Arabic\n5. Implement responsive design with Tailwind CSS",
-        "testStrategy": "Test UI in both languages, verify RTL layout works correctly, test all CRUD operations through UI, verify proper error handling and loading states",
+        "id": "15",
+        "title": "Fix Compliance Calendar Feature End-to-End",
+        "description": "Ensure calendar displays deadlines, allows CRUD operations, and integrates with CMA scraper",
+        "details": "1. Fix deadline loading:\n```python\n# GET /api/compliance/deadlines\n# JOIN with deadline_categories table\n```\n2. Test deadline creation:\n```python\n# POST /api/compliance/deadlines\n# Verify saved with correct firm_id\n```\n3. Test status updates:\n```python\n# PATCH /api/compliance/deadlines/{id}\n# Update completed_at timestamp\n```\n4. Fix calendar UI component to display deadlines by date\n5. Ensure CMA scraper creates deadlines:\n```python\n# When obligations found, create corresponding deadlines\n```\n6. Add filtering by category and status",
+        "testStrategy": "Create deadlines for past, present, and future dates. Verify calendar view renders correctly. Test bulk operations. Verify CMA-sourced deadlines appear with correct metadata.",
         "priority": "medium",
         "dependencies": [
-          "5"
+          "12"
         ],
-        "status": "done",
-        "subtasks": [],
-        "updatedAt": "2026-03-30T14:42:15.531Z"
+        "status": "pending",
+        "subtasks": []
       },
       {
-        "id": "7",
-        "title": "CMA Circular Scraper and Parser",
-        "description": "Build automated scraper for cma.org.sa to monitor and ingest new circulars, extract obligations and deadlines using AI",
-        "details": "1. Enhance scraper.py for CMA website:\n```python\nimport asyncio\nfrom bs4 import BeautifulSoup\nimport httpx\n\nclass CMAScaper:\n    async def scrape_circulars(self):\n        # Monitor https://cma.org.sa/RulesRegulations/Circulars\n        # Extract circular metadata (number, date, title)\n        # Download PDF/HTML content\n        # Store in database with status 'pending_analysis'\n```\n2. Build circular parser using Claude API:\n```python\nclass CircularParser:\n    async def parse_circular(self, content: str):\n        prompt = '''\n        Extract from this CMA circular:\n        1. Key obligations and requirements\n        2. Deadlines and timelines\n        3. Affected departments/roles\n        4. Required actions\n        Return structured JSON\n        '''\n        # Call Claude API with RAG context\n        # Extract obligations in Arabic and English\n```\n3. Create scheduled job to run scraper daily\n4. Store parsed data in regulatory_obligations table\n5. Trigger notifications for new circulars",
-        "testStrategy": "Test with historical CMA circulars, verify parser extracts correct obligations, test scheduled job runs reliably, verify duplicate detection works",
+        "id": "16",
+        "title": "Fix Document Generator Feature End-to-End",
+        "description": "Ensure template-based document generation works with variable substitution and review workflow",
+        "details": "1. Seed document templates if empty:\n```sql\nINSERT INTO document_templates (name, content, fields, category)\nVALUES ('Compliance Report', '{content}', '{\"fields\": [...]}', 'reports');\n```\n2. Fix template loading endpoint:\n```python\n# GET /api/documents/templates\n```\n3. Test document generation:\n```python\n# POST /api/documents/generate\n# Replace template variables\n# Save to generated_documents table\n```\n4. Implement submit-for-review workflow:\n```python\n# POST /api/documents/{id}/submit-review\n# Update status, create notification\n```\n5. Fix frontend template selection and field mapping UI",
+        "testStrategy": "Generate documents with all field types (text, date, number). Verify variable substitution works correctly. Test review workflow state transitions. Export generated documents as PDF.",
         "priority": "medium",
         "dependencies": [
-          "6"
+          "12"
         ],
-        "status": "done",
-        "subtasks": [],
-        "updatedAt": "2026-03-30T14:47:38.422Z"
+        "status": "pending",
+        "subtasks": []
       },
       {
-        "id": "8",
-        "title": "Regulatory Intelligence Dashboard",
-        "description": "Build comprehensive regulatory intelligence dashboard showing pending obligations, impact analysis, and task assignments",
-        "details": "1. Create regulatory intelligence API endpoints:\n```python\n@router.get('/regulatory/obligations/pending')\nasync def get_pending_obligations():\n    # Return obligations grouped by deadline\n\n@router.post('/regulatory/obligations/{id}/assign')\nasync def assign_obligation(id: UUID, assignment: TaskAssignment):\n    # Assign obligation to user with deadline\n\n@router.post('/regulatory/impact-analysis')\nasync def analyze_circular_impact(circular_id: UUID):\n    # Run impact analysis against existing policies\n```\n2. Build frontend dashboard:\n```typescript\n// pages/regulatory-intelligence/index.tsx\n- Pending obligations timeline view\n- Circular list with status badges\n- Impact analysis results panel\n- Task assignment modal\n- Gap analysis visualization\n```\n3. Implement real-time updates using Supabase subscriptions\n4. Add filtering by department, deadline, status\n5. Export functionality for compliance reports",
-        "testStrategy": "Test with sample circulars, verify obligations are correctly displayed, test task assignment workflow, verify real-time updates work",
+        "id": "17",
+        "title": "Fix Dashboard Data Integrity and Expandable Cards",
+        "description": "Ensure all dashboard stats show accurate counts and expand to show real detail items",
+        "details": "1. Fix stat calculation queries:\n```python\n# GET /api/dashboard/stats\nstats = {\n    'conversations': db.query('SELECT COUNT(*) FROM conversations WHERE firm_id = ?'),\n    'documents': db.query('SELECT COUNT(*) FROM document_reviews WHERE firm_id = ?'),\n    'deadlines': db.query('SELECT COUNT(*) FROM deadlines WHERE firm_id = ? AND completed_at IS NULL'),\n    'alerts': db.query('SELECT COUNT(*) FROM alerts WHERE created_at > NOW() - INTERVAL 30 days')\n}\n```\n2. Implement detail endpoints for each stat:\n```python\n# GET /api/dashboard/conversations/recent\n# GET /api/dashboard/documents/recent\n# GET /api/dashboard/deadlines/upcoming\n# GET /api/dashboard/alerts/recent\n```\n3. Fix frontend expandable card components to fetch and display details\n4. Implement CMA scan button handler\n5. Fix audit trail to show real activities",
+        "testStrategy": "Verify each stat matches actual database counts. Click each card to expand and verify real data displays. Test with empty and populated databases. Verify real-time updates.",
+        "priority": "high",
+        "dependencies": [
+          "13",
+          "14",
+          "15",
+          "16"
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": "18",
+        "title": "Fix Learning Dashboard and Analytics",
+        "description": "Ensure learning dashboard displays real accuracy metrics and knowledge base management works",
+        "details": "1. Fix accuracy summary endpoint:\n```python\n# GET /api/learning/accuracy-summary\n# Aggregate from accuracy_metrics table\n```\n2. Implement accuracy trends calculation:\n```python\n# GET /api/learning/accuracy-trends\n# Group by date, calculate moving averages\n```\n3. Fix knowledge base CRUD:\n```python\n# POST /api/learning/knowledge-base\n# GET /api/learning/knowledge-base\n# DELETE /api/learning/knowledge-base/{id}\n```\n4. Fix prompt configs display:\n```python\n# GET /api/learning/prompt-configs\n```\n5. Ensure analyze-feedback job runs:\n```python\n# POST /api/learning/analyze-feedback\n# Process feedback, update metrics\n```\n6. Remove deleted features from filter dropdown",
+        "testStrategy": "Submit feedback for various features and verify metrics update. Test knowledge base CRUD operations. Verify trends calculate correctly over time periods.",
         "priority": "medium",
         "dependencies": [
-          "7"
+          "12",
+          "13"
         ],
-        "status": "done",
-        "subtasks": [],
-        "updatedAt": "2026-03-30T14:54:37.738Z"
+        "status": "pending",
+        "subtasks": []
       },
       {
-        "id": "9",
-        "title": "Enhanced Bilingual Document Generation",
-        "description": "Upgrade document generation to support production-quality bilingual output with TAM branding and approval workflow",
-        "details": "1. Enhance docgen.py for bilingual support:\n```python\nclass BilingualDocGenerator:\n    async def generate_document(self, template: str, data: dict, languages: List[str]):\n        # Generate content in requested languages\n        # Use parallel Claude API calls for AR/EN\n        # Merge into single document with proper formatting\n```\n2. Create document templates:\n   - CMA periodic reports\n   - Board pack compliance sections\n   - Client disclosure documents\n   - STR templates\n   - AML case documentation\n   - Sharia compliance attestations\n3. Implement approval workflow:\n```python\nclass DocumentWorkflow:\n    states = ['draft', 'pending_review', 'approved', 'archived']\n    \n    async def submit_for_review(self, doc_id: UUID):\n        # Move to pending_review, notify reviewers\n    \n    async def approve_document(self, doc_id: UUID, approver_id: UUID):\n        # Approve with timestamp and approver info\n```\n4. Add firm branding configuration\n5. Implement version control with diff viewing",
-        "testStrategy": "Generate sample documents in both languages, verify Arabic RTL formatting, test approval workflow with multiple reviewers, verify branding appears correctly",
-        "priority": "low",
+        "id": "19",
+        "title": "Fix Admin Panel and Multi-Tenant Management",
+        "description": "Ensure super admin can manage firms/users and firm admins can manage their users",
+        "details": "1. Fix firm management for super_admin:\n```python\n# GET /api/admin/firms\n# POST /api/admin/firms\n# PATCH /api/admin/firms/{id} (activate/deactivate)\n```\n2. Fix user management:\n```python\n# GET /api/admin/users\n# PATCH /api/admin/users/{id}/role\n```\n3. Fix audit log display:\n```python\n# GET /api/admin/audit-log\n# JOIN with users and firms tables\n```\n4. Implement usage summary:\n```python\n# GET /api/admin/usage\n# Aggregate API calls, storage, etc.\n```\n5. Fix firm-scoped user management for firm_admin role\n6. Ensure RLS policies enforce firm isolation",
+        "testStrategy": "Test with super_admin and firm_admin accounts. Verify firm isolation works. Test user role changes take effect immediately. Verify audit log captures all actions.",
+        "priority": "high",
         "dependencies": [
-          "8"
+          "12"
         ],
-        "status": "done",
-        "subtasks": [],
-        "updatedAt": "2026-03-30T15:02:38.803Z"
+        "status": "pending",
+        "subtasks": []
       },
       {
-        "id": "10",
-        "title": "Comprehensive Interaction Logging System",
-        "description": "Build interaction logging service to capture all user actions with feedback mechanism for future ML training",
-        "details": "1. Create interaction logging middleware:\n```python\nclass InteractionLogger:\n    async def log_interaction(self, request: Request, response: Response):\n        interaction = {\n            'user_id': request.state.user.id,\n            'endpoint': request.url.path,\n            'method': request.method,\n            'request_body': await request.json() if request.method == 'POST' else None,\n            'response_status': response.status_code,\n            'timestamp': datetime.utcnow(),\n            'session_id': request.state.session_id\n        }\n        await save_to_usage_events(interaction)\n```\n2. Build feedback capture system:\n```python\n@router.post('/feedback')\nasync def submit_feedback(feedback: Feedback):\n    # feedback.rating: approved/needs_edit/rejected\n    # feedback.original_output\n    # feedback.edited_output (if applicable)\n    # feedback.comments\n```\n3. Create feedback dashboard:\n   - Aggregate feedback by feature\n   - Show approval rates over time\n   - Identify most-corrected outputs\n   - Export data for ML training\n4. Implement data retention policies\n5. Build privacy-compliant export functionality",
-        "testStrategy": "Verify all API calls are logged, test feedback submission flow, verify dashboard aggregations are accurate, test data export formats for ML compatibility",
-        "priority": "low",
+        "id": "20",
+        "title": "Fix CMA Scraper Pipeline End-to-End",
+        "description": "Ensure CMA scraper fetches updates, parses circulars, and creates alerts/deadlines",
+        "details": "1. Fix manual scan trigger:\n```python\n# POST /api/scraper/scan\n# Trigger immediate CMA website scrape\n```\n2. Verify scraper fetches from cma.gov.sa:\n```python\n# Check robots.txt compliance\n# Parse circular listings\n# Download new PDFs\n```\n3. Fix circular parser:\n```python\n# Extract obligations from PDF text\n# Use NLP to identify deadlines\n```\n4. Ensure alerts are created:\n```sql\nINSERT INTO alerts (title, description, source_url, circular_number)\n```\n5. Sync obligations to calendar:\n```sql\nINSERT INTO deadlines (title, due_date, source, source_id)\n```\n6. Fix scheduler for daily runs:\n```python\n# Configure cron job or scheduler\n```",
+        "testStrategy": "Manually trigger scan and verify new circulars are found. Check alerts table populates. Verify deadlines are created with correct dates. Test parser with various circular formats.",
+        "priority": "high",
         "dependencies": [
-          "9"
+          "12",
+          "15"
         ],
-        "status": "done",
-        "subtasks": [],
-        "updatedAt": "2026-03-30T15:10:38.859Z"
+        "status": "pending",
+        "subtasks": []
       }
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-03-30T15:10:38.861Z",
+      "lastModified": "2026-04-05T14:26:46.775Z",
       "taskCount": 10,
-      "completedCount": 10,
+      "completedCount": 0,
       "tags": [
         "master"
       ]

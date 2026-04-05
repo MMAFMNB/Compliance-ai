@@ -18,17 +18,9 @@ test.describe("Navigation & Routing", () => {
     const protectedRoutes = [
       "/dashboard",
       "/review",
-      "/search",
-      "/alerts",
       "/calendar",
-      "/checklist",
-      "/self-assessment",
-      "/aml",
-      "/suitability",
-      "/impact-analysis",
       "/docgen",
       "/learning",
-      "/regulatory",
       "/admin",
       "/firm-admin",
     ];

@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 # Valid period types
 PERIOD_TYPES = {"daily", "weekly", "monthly"}
-VALID_FEATURES = {"chat", "review", "docgen", "impact_analysis", "checklist", "assessment", "obligations"}
+VALID_FEATURES = {"chat", "review", "docgen", "obligations"}
 
 
 # ─── Role guards ───────────────────────────────────────────

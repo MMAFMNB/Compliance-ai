@@ -41,13 +41,4 @@ test.describe("Visual regression - authenticated pages", () => {
     );
   });
 
-  test("alerts page matches baseline", async ({ authedPage }) => {
-    await authedPage.goto("/alerts");
-    await authedPage.waitForLoadState("networkidle");
-
-    await expect(authedPage).toHaveScreenshot(
-      "alerts.png",
-      SCREENSHOT_OPTIONS
-    );
-  });
 });
