@@ -18,6 +18,9 @@ import {
   RefreshCw,
   CheckCircle,
   AlertTriangle,
+  Globe,
+  Building2,
+  Shield,
 } from "lucide-react";
 import { useRequireAuth } from "@/lib/useRequireAuth";
 import { supabase } from "@/lib/supabase";
@@ -49,12 +52,24 @@ interface DetailItem {
   date: string;
 }
 
+interface Source {
+  name: string;
+  name_ar: string;
+  domain: string;
+  documents: number;
+  alerts?: number;
+  high_risk_countries?: number;
+  last_scan: string | null;
+  status: string;
+}
+
 export default function DashboardPage() {
   const router = useRouter();
   const { user, isLoading: isAuthLoading } = useRequireAuth();
 
   const [stats, setStats] = useState<Stats | null>(null);
   const [audit, setAudit] = useState<AuditEntry[]>([]);
+  const [sources, setSources] = useState<Source[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [scanning, setScanning] = useState(false);
   const [scanResult, setScanResult] = useState<{ total_saved: number; news_found: number; circulars_found: number; regulations_found: number } | null>(null);
@@ -72,15 +87,20 @@ export default function DashboardPage() {
       const { data: { session } } = await supabase.auth.getSession();
       const headers = { Authorization: `Bearer ${session?.access_token}` };
 
-      const [statsRes, auditRes] = await Promise.all([
+      const [statsRes, auditRes, sourcesRes] = await Promise.all([
         fetch(`${API_URL}/api/dashboard/stats`, { headers }),
         fetch(`${API_URL}/api/dashboard/audit?limit=15`, { headers }),
+        fetch(`${API_URL}/api/dashboard/sources`, { headers }),
       ]);
 
       if (statsRes.ok) setStats(await statsRes.json());
       if (auditRes.ok) {
         const data = await auditRes.json();
         setAudit(data.entries);
+      }
+      if (sourcesRes.ok) {
+        const data = await sourcesRes.json();
+        setSources(data.sources || []);
       }
     } catch (err) {
       console.error("Failed to fetch dashboard:", err);
@@ -288,6 +308,92 @@ export default function DashboardPage() {
               <StatCard icon={<Bell size={16} />} label="التنبيهات" value={stats.total_alerts} sublabel={stats.unread_alerts > 0 ? `${stats.unread_alerts} جديدة` : undefined} color="text-red-500" statType="alerts" />
               <StatCard icon={<FileText size={16} />} label="الأجزاء المفهرسة" value={stats.total_chunks} color="text-slate-500" statType="chunks" />
             </div>
+
+            {/* Data Sources */}
+            {sources.length > 0 && (
+              <div className="mb-8">
+                <h2 className="text-sm font-semibold text-tam-primary mb-4 flex items-center gap-2">
+                  <Globe size={14} />
+                  مصادر البيانات — Data Sources
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {sources.map((source) => {
+                    const isCMA = source.name === "CMA";
+                    const SourceIcon = isCMA ? Building2 : Shield;
+                    const iconColor = isCMA ? "text-tam-primary" : "text-emerald-600";
+                    const additionalStat = isCMA ? source.alerts : source.high_risk_countries;
+                    const additionalLabel = isCMA ? "تنبيهات — Alerts" : "دول عالية المخاطر — High Risk Countries";
+
+                    return (
+                      <div
+                        key={source.name}
+                        className="bg-white border border-slate-200 rounded-xl p-5 flex flex-col gap-3"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-9 h-9 rounded-lg bg-slate-50 flex items-center justify-center ${iconColor}`}>
+                              <SourceIcon size={18} />
+                            </div>
+                            <div>
+                              <p className="text-sm font-semibold text-slate-800">{source.name_ar}</p>
+                              <p className="text-[11px] text-slate-400">{source.name}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            {source.status === "active" && (
+                              <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
+                            )}
+                            <span className="text-[10px] text-slate-400">
+                              {source.status === "active" ? "نشط" : source.status}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                          <Globe size={12} className="text-slate-400" />
+                          <a
+                            href={`https://${source.domain}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:text-tam-primary hover:underline transition-colors"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {source.domain}
+                          </a>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100">
+                          <div className="flex items-center gap-2">
+                            <FileText size={13} className="text-slate-400" />
+                            <div>
+                              <p className="text-lg font-bold text-slate-800">{source.documents}</p>
+                              <p className="text-[10px] text-slate-400">مستندات — Documents</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <SourceIcon size={13} className="text-slate-400" />
+                            <div>
+                              <p className="text-lg font-bold text-slate-800">{additionalStat ?? 0}</p>
+                              <p className="text-[10px] text-slate-400">{additionalLabel}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="text-[10px] text-slate-400 pt-1">
+                          آخر فحص:{" "}
+                          {source.last_scan
+                            ? new Date(source.last_scan).toLocaleString("ar-SA", {
+                                dateStyle: "short",
+                                timeStyle: "short",
+                              })
+                            : "لم يتم الفحص بعد"}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="bg-white border border-slate-200 rounded-xl p-5">
