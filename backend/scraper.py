@@ -1,7 +1,6 @@
 """CMA website scraper: detect new circulars, amendments, and publications."""
 
 import logging
-import re
 from datetime import datetime
 
 import httpx
@@ -17,16 +16,25 @@ CMA_CIRCULARS_URL_EN = f"{CMA_BASE_URL}/en/RulesRegulations/CMACirculars/Pages/d
 CMA_REGULATIONS_URL_EN = f"{CMA_BASE_URL}/en/RulesRegulations/Regulations/Pages/default.aspx"
 
 REQUEST_TIMEOUT = 30
-USER_AGENT = "TAM-Compliance-AI/1.0 (+https://tam.capital)"
+USER_AGENT = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+)
 
 
 def _fetch_page(url: str) -> str | None:
-    """Fetch a page with error handling."""
+    """Fetch a page with error handling and browser-like headers."""
     try:
         response = httpx.get(
             url,
             timeout=REQUEST_TIMEOUT,
-            headers={"User-Agent": USER_AGENT},
+            headers={
+                "User-Agent": USER_AGENT,
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "Accept-Language": "en-US,en;q=0.9,ar;q=0.8",
+                "Accept-Encoding": "gzip, deflate, br",
+                "Connection": "keep-alive",
+            },
             follow_redirects=True,
         )
         response.raise_for_status()
@@ -72,9 +80,9 @@ def scrape_cma_news() -> list[dict]:
     """Scrape the CMA English news page for new publications.
 
     The CMA news page uses card-based layout with:
-    - <div data-id="..."> as card containers
-    - <h3> for titles
-    - <span class="date"> for publication dates
+    - <div class="carditem"> as card containers
+    - <h4> for titles
+    - <p class="fs-6"> for publication dates
     - <a href="/en/MediaCenter/NEWS/Pages/CMA_N_XXXX.aspx"> for detail links
     """
     html = _fetch_page(CMA_NEWS_URL_EN)
@@ -84,16 +92,26 @@ def scrape_cma_news() -> list[dict]:
     soup = BeautifulSoup(html, "html.parser")
     new_items = []
 
-    for card in soup.select("[data-id]"):
-        h3 = card.select_one("h3")
-        if not h3:
+    # Primary selector: .carditem cards (current CMA layout)
+    cards = soup.select(".carditem")
+    # Fallback: legacy [data-id] cards
+    if not cards:
+        cards = soup.select("[data-id]")
+
+    for card in cards:
+        # Title: try h4 first (current), then h3 (legacy)
+        title_el = card.select_one("h4") or card.select_one("h3")
+        if not title_el:
             continue
-        title = h3.get_text(strip=True)
+        title = title_el.get_text(strip=True)
         if not title or len(title) < 10:
             continue
 
         # Find the detail link
         link = card.select_one("a[href*='/NEWS/Pages/CMA_N_']")
+        if not link:
+            # Fallback: any link in the card
+            link = card.select_one("a[href]")
         if not link:
             continue
         href = link.get("href", "")
@@ -107,8 +125,8 @@ def scrape_cma_news() -> list[dict]:
         if _is_already_tracked(source_url):
             continue
 
-        # Extract date
-        date_el = card.select_one("span.date, .date")
+        # Extract date: try p.fs-6 first (current), then span.date (legacy)
+        date_el = card.select_one("p.fs-6") or card.select_one("span.date, .date")
         publication_date = None
         if date_el:
             publication_date = _parse_date(date_el.get_text(strip=True))
@@ -126,7 +144,12 @@ def scrape_cma_news() -> list[dict]:
 
 
 def scrape_cma_circulars() -> list[dict]:
-    """Scrape the CMA circulars page for new circulars."""
+    """Scrape the CMA circulars page for new circulars.
+
+    The circulars page may use .carditem layout similar to news,
+    or may have direct PDF/document links. The page has WAF protection
+    that may block bot-like requests, so we use browser-like headers.
+    """
     html = _fetch_page(CMA_CIRCULARS_URL_EN)
     if not html:
         return []
@@ -134,12 +157,22 @@ def scrape_cma_circulars() -> list[dict]:
     soup = BeautifulSoup(html, "html.parser")
     new_items = []
 
-    # Try card-based layout first (same as news)
-    for card in soup.select("[data-id]"):
-        h3 = card.select_one("h3")
-        if not h3:
+    # Check for WAF block / error page
+    if "requested URL was rejected" in (soup.get_text() or ""):
+        logger.warning("CMA circulars page returned WAF block — skipping")
+        return []
+
+    # Primary: .carditem cards (current CMA layout)
+    cards = soup.select(".carditem")
+    # Fallback: legacy [data-id] cards
+    if not cards:
+        cards = soup.select("[data-id]")
+
+    for card in cards:
+        title_el = card.select_one("h4") or card.select_one("h3")
+        if not title_el:
             continue
-        title = h3.get_text(strip=True)
+        title = title_el.get_text(strip=True)
         if not title or len(title) < 10:
             continue
 
@@ -157,7 +190,7 @@ def scrape_cma_circulars() -> list[dict]:
         if _is_already_tracked(source_url):
             continue
 
-        date_el = card.select_one("span.date, .date")
+        date_el = card.select_one("p.fs-6") or card.select_one("span.date, .date")
         publication_date = _parse_date(date_el.get_text(strip=True)) if date_el else None
 
         new_items.append({
@@ -167,7 +200,7 @@ def scrape_cma_circulars() -> list[dict]:
             "doc_type": "circular",
         })
 
-    # Fallback: look for direct PDF links
+    # Fallback: look for direct PDF links if no cards found
     if not new_items:
         for link in soup.select("a[href*='Circular'], a[href*='.pdf']"):
             href = link.get("href", "")
@@ -195,10 +228,11 @@ def scrape_cma_circulars() -> list[dict]:
 def scrape_cma_regulations() -> list[dict]:
     """Scrape the CMA regulations page for regulation documents and PDFs.
 
-    The regulations page has cards with:
-    - <h3> for regulation titles
+    The regulations page uses .carditem cards with:
+    - <h3> or <h4> for regulation titles
     - <a href="...pdf"> for direct PDF downloads
-    - <span class="date"> for dates
+    - <a href="/details.aspx?code=..."> for detail pages
+    - <p class="fs-6"> or date elements for dates
     """
     html = _fetch_page(CMA_REGULATIONS_URL_EN)
     if not html:
@@ -207,18 +241,25 @@ def scrape_cma_regulations() -> list[dict]:
     soup = BeautifulSoup(html, "html.parser")
     new_items = []
 
-    for card in soup.select("[data-id]"):
-        h3 = card.select_one("h3")
-        if not h3:
+    # Primary: .carditem cards (current CMA layout)
+    cards = soup.select(".carditem")
+    # Fallback: legacy [data-id] cards
+    if not cards:
+        cards = soup.select("[data-id]")
+
+    for card in cards:
+        title_el = card.select_one("h3") or card.select_one("h4")
+        if not title_el:
             continue
-        title = h3.get_text(strip=True)
+        title = title_el.get_text(strip=True)
         if not title or len(title) < 10:
             continue
 
-        # Find the best link — prefer PDF, fallback to any link
+        # Find the best link — prefer PDF, then detail page, then any link
         pdf_link = card.select_one("a[href*='.pdf']")
+        detail_link = card.select_one("a[href*='details.aspx']")
         any_link = card.select_one("a[href]")
-        link = pdf_link or any_link
+        link = pdf_link or detail_link or any_link
         if not link:
             continue
 
@@ -233,7 +274,7 @@ def scrape_cma_regulations() -> list[dict]:
         if _is_already_tracked(source_url):
             continue
 
-        date_el = card.select_one("span.date, .date")
+        date_el = card.select_one("p.fs-6") or card.select_one("span.date, .date")
         publication_date = _parse_date(date_el.get_text(strip=True)) if date_el else None
 
         doc_type = _classify_doc_type(title)
@@ -278,12 +319,17 @@ def save_alerts(items: list[dict]) -> int:
             "source_url": item["source_url"],
             "publication_date": item.get("publication_date"),
             "doc_type": item["doc_type"],
-            "is_processed": False,
+            "is_processed": True,
+            "is_parsed": False,
         }
         for item in items
     ]
 
-    supabase_admin.table("alerts").insert(rows).execute()
+    try:
+        supabase_admin.table("alerts").insert(rows).execute()
+    except Exception:
+        logger.exception("Failed to insert %d alerts into database", len(rows))
+        return 0
     return len(rows)
 
 
@@ -329,8 +375,8 @@ def run_scraper(parse_circulars: bool = True) -> dict:
         "obligations_extracted": 0,
     }
 
-    if parse_circulars and saved > 0:
-        # Parse circulars for obligations
+    if parse_circulars:
+        # Parse any unparsed alerts for obligations (new or previously missed)
         try:
             from circular_parser import process_unparsed_alerts
             parse_result = process_unparsed_alerts()

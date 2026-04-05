@@ -5,10 +5,7 @@ import logging
 import re
 from datetime import datetime, timezone
 
-import anthropic
-
 from api_utils import call_anthropic
-from config import ANTHROPIC_API_KEY, MODEL
 from database import supabase_admin
 
 logger = logging.getLogger(__name__)
@@ -129,14 +126,17 @@ def save_obligations(alert_id: str, obligations: list[dict]) -> int:
 
 
 def process_unparsed_alerts(limit: int = 5) -> dict:
-    """Find alerts that have impact summaries but haven't been parsed yet.
+    """Find alerts that haven't been parsed yet and extract obligations.
+
+    Picks up any alert where is_parsed is False, regardless of is_processed
+    status. This ensures newly scraped alerts flow through the pipeline
+    even without a separate impact-summary step.
 
     Returns summary of processing results.
     """
     result = (
         supabase_admin.table("alerts")
         .select("*")
-        .eq("is_processed", True)
         .eq("is_parsed", False)
         .order("created_at", desc=False)
         .limit(limit)

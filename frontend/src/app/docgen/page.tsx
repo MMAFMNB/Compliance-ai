@@ -51,6 +51,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   board_notification: "text-amber-600 bg-amber-50",
   fund_prospectus: "text-emerald-600 bg-emerald-50",
   cma_form: "text-purple-600 bg-purple-50",
+  risk_assessment: "text-orange-600 bg-orange-50",
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -59,6 +60,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   board_notification: "إخطار مجلس الإدارة",
   fund_prospectus: "نشرة إصدار صندوق",
   cma_form: "نموذج هيئة السوق المالية",
+  risk_assessment: "تقييم المخاطر",
 };
 
 export default function DocGenPage() {

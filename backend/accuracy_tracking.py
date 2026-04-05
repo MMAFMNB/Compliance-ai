@@ -154,10 +154,10 @@ def log_learning_event(user_id: str, firm_id: str, event_type: str, details: dic
     """Log a learning event for tracking system improvements."""
     try:
         supabase_admin.table("learning_events").insert({
-            "user_id": user_id,
             "firm_id": firm_id,
             "event_type": event_type,
             "details": details,
+            "triggered_by": user_id or "system",
         }).execute()
     except Exception:
         logger.exception("Failed to log learning event")

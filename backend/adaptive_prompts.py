@@ -35,6 +35,7 @@ class PromptConfigOut(BaseModel):
     config_value_ar: Optional[str] = None
     description: Optional[str] = None
     learned_from: Optional[str] = None
+    confidence_score: Optional[float] = 50.0
     is_active: bool
     created_at: str
     updated_at: str
@@ -45,7 +46,10 @@ class LearningEvent(BaseModel):
     id: str
     firm_id: str
     event_type: str  # "prompt_updated" or "feedback_processed"
-    event_data: dict
+    description: Optional[str] = None
+    description_ar: Optional[str] = None
+    details: Optional[dict] = None
+    triggered_by: Optional[str] = None
     created_at: str
 
 
@@ -245,11 +249,11 @@ def upsert_prompt_config(
             supabase_admin.table("learning_events").insert({
                 "firm_id": firm_id,
                 "event_type": "prompt_updated",
-                "event_data": {
+                "details": {
                     "config_key": key,
                     "config_id": config_id,
-                    "user_id": user.get("id"),
                 },
+                "triggered_by": user.get("id", "system"),
             }).execute()
         except Exception as e:
             logger.warning("Failed to log learning_event: %s", e)
@@ -442,12 +446,12 @@ Also provide a brief analysis_summary (1-2 sentences) of the main themes you see
             supabase_admin.table("learning_events").insert({
                 "firm_id": firm_id,
                 "event_type": "feedback_processed",
-                "event_data": {
+                "details": {
                     "feedback_count": len(feedback_items),
                     "suggestions_count": len(suggestions),
-                    "user_id": user.get("id"),
                     "period_days": days,
                 },
+                "triggered_by": user.get("id", "system"),
             }).execute()
         except Exception as e:
             logger.warning("Failed to log learning_event: %s", e)

@@ -246,6 +246,31 @@ SEED_TEMPLATES = [
             {"field_name": "data_summary", "label": "ملخص البيانات", "label_en": "Data Summary", "type": "textarea"}
         ])
     },
+    {
+        "id": str(uuid.uuid5(uuid.NAMESPACE_DNS, "risk_assessment")),
+        "name": "تقييم المخاطر",
+        "name_en": "Risk Assessment",
+        "category": "risk_assessment",
+        "description": "إعداد تقرير تقييم المخاطر الشامل وفقاً لمتطلبات هيئة السوق المالية",
+        "prompt_template": (
+            "أنت خبير تنظيمي متخصص في لوائح هيئة السوق المالية السعودية (CMA). "
+            "قم بإعداد تقرير تقييم مخاطر شامل متوافق مع إطار إدارة المخاطر لهيئة السوق المالية "
+            "بالتفاصيل التالية:\n\n"
+            "اسم الشركة: {company_name}\n"
+            "نطاق التقييم: {assessment_scope}\n"
+            "الفترة المشمولة: {assessment_period}\n"
+            "المخاطر المحددة: {identified_risks}\n\n"
+            "يجب أن يتضمن التقرير تحديد المخاطر وتصنيفها، وتقييم الأثر والاحتمالية، "
+            "وإجراءات التخفيف المقترحة، ومصفوفة المخاطر. "
+            "اكتب التقرير باللغة العربية مع ترجمة إنجليزية، واستخدم المصطلحات التنظيمية الصحيحة لهيئة السوق المالية."
+        ),
+        "required_fields": json.dumps([
+            {"field_name": "company_name", "label": "اسم الشركة", "label_en": "Company Name", "type": "text"},
+            {"field_name": "assessment_scope", "label": "نطاق التقييم", "label_en": "Assessment Scope", "type": "text"},
+            {"field_name": "assessment_period", "label": "الفترة المشمولة", "label_en": "Assessment Period", "type": "text"},
+            {"field_name": "identified_risks", "label": "المخاطر المحددة", "label_en": "Identified Risks", "type": "textarea"}
+        ])
+    },
 ]
 
 

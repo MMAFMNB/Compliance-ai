@@ -43,31 +43,35 @@ interface KBEntry {
 
 interface PromptConfig {
   id: string;
+  firm_id: string;
   config_key: string;
   config_value: string;
+  config_value_ar?: string;
   description?: string;
-  learned_from: string;
-  confidence_score: number;
+  learned_from?: string;
+  confidence_score?: number;
   is_active: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
-interface AccuracyMetric {
-  feature: string;
-  period_start: string;
-  period_end: string;
-  total_interactions: number;
-  approved_count: number;
-  needs_edit_count: number;
-  rejected_count: number;
+interface TrendPoint {
+  period: string;
   approval_rate: number;
-  improvement_vs_previous: number | null;
+  total: number;
+  improvement: number | null;
 }
 
 interface AccuracySummary {
-  overall_approval_rate: number;
-  total_interactions: number;
-  feature_breakdown: Record<string, { approval_rate: number; total: number }>;
-  trend: string;
+  current_approval_rate: number;
+  trend_direction: "improving" | "declining" | "stable";
+  best_feature: string | null;
+  best_feature_rate: number;
+  worst_feature: string | null;
+  worst_feature_rate: number;
+  total_feedback_collected: number;
+  overall_improvement: number;
+  last_computed_at: string;
 }
 
 interface LearningEvent {
@@ -208,7 +212,7 @@ function OverviewTab() {
         fetch(`${API_URL}/api/accuracy/summary`, { headers: h }).catch(
           () => null
         ),
-        fetch(`${API_URL}/api/accuracy/trends?feature=all&periods=4`, {
+        fetch(`${API_URL}/api/accuracy/trends?feature=all&last_n_periods=4`, {
           headers: h,
         }).catch(() => null),
       ]);
@@ -243,14 +247,14 @@ function OverviewTab() {
         <KpiCard
           label="معدل الموافقة الإجمالي"
           sublabel="Overall Approval Rate"
-          value={summary ? `${summary.overall_approval_rate.toFixed(1)}%` : "—"}
+          value={summary ? `${summary.current_approval_rate.toFixed(1)}%` : "—"}
           icon={<CheckCircle2 size={20} />}
           color="emerald"
         />
         <KpiCard
-          label="إجمالي التفاعلات"
-          sublabel="Total Interactions"
-          value={summary?.total_interactions?.toLocaleString() ?? "0"}
+          label="إجمالي الملاحظات"
+          sublabel="Total Feedback"
+          value={summary?.total_feedback_collected?.toLocaleString() ?? "0"}
           icon={<BarChart3 size={20} />}
           color="blue"
         />
@@ -258,83 +262,64 @@ function OverviewTab() {
           label="الاتجاه العام"
           sublabel="Overall Trend"
           value={
-            summary?.trend === "improving"
+            summary?.trend_direction === "improving"
               ? "تحسّن"
-              : summary?.trend === "declining"
+              : summary?.trend_direction === "declining"
                 ? "انخفاض"
                 : "مستقر"
           }
           icon={
-            summary?.trend === "improving" ? (
+            summary?.trend_direction === "improving" ? (
               <TrendingUp size={20} />
-            ) : summary?.trend === "declining" ? (
+            ) : summary?.trend_direction === "declining" ? (
               <TrendingDown size={20} />
             ) : (
               <Minus size={20} />
             )
           }
           color={
-            summary?.trend === "improving"
+            summary?.trend_direction === "improving"
               ? "emerald"
-              : summary?.trend === "declining"
+              : summary?.trend_direction === "declining"
                 ? "red"
                 : "gray"
           }
         />
         <KpiCard
-          label="الميزات المتعقبة"
-          sublabel="Features Tracked"
-          value={
-            summary?.feature_breakdown
-              ? Object.keys(summary.feature_breakdown).length.toString()
-              : "0"
-          }
+          label="التحسن العام"
+          sublabel="Overall Improvement"
+          value={summary ? `${summary.overall_improvement >= 0 ? "+" : ""}${summary.overall_improvement.toFixed(1)}%` : "—"}
           icon={<Sparkles size={20} />}
           color="purple"
         />
       </div>
 
-      {/* Feature Breakdown */}
-      {summary?.feature_breakdown &&
-        Object.keys(summary.feature_breakdown).length > 0 && (
+      {/* Best / Worst Feature */}
+      {summary && (summary.best_feature || summary.worst_feature) && (
           <div className="bg-white rounded-xl border border-gray-200 p-5">
             <h3 className="text-sm font-semibold text-gray-800 mb-4" dir="ltr">
-              Feature Quality Breakdown
+              Feature Quality Highlights
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {Object.entries(summary.feature_breakdown).map(
-                ([feature, data]) => (
-                  <div
-                    key={feature}
-                    className="border border-gray-100 rounded-lg p-3"
-                  >
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm font-medium text-gray-700 capitalize">
-                        {feature}
-                      </span>
-                      <span className="text-xs text-gray-400">
-                        {data.total} interactions
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-100 rounded-full h-2">
-                      <div
-                        className={`h-2 rounded-full ${
-                          data.approval_rate >= 80
-                            ? "bg-emerald-500"
-                            : data.approval_rate >= 60
-                              ? "bg-yellow-500"
-                              : "bg-red-500"
-                        }`}
-                        style={{
-                          width: `${Math.min(data.approval_rate, 100)}%`,
-                        }}
-                      />
-                    </div>
-                    <p className="text-xs text-gray-500 mt-1" dir="ltr">
-                      {data.approval_rate.toFixed(1)}% approval
-                    </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {summary.best_feature && (
+                <div className="border border-emerald-100 bg-emerald-50/30 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <CheckCircle2 size={16} className="text-emerald-600" />
+                    <span className="text-sm font-medium text-emerald-800">Best Feature</span>
                   </div>
-                )
+                  <p className="text-lg font-bold text-emerald-700 capitalize">{summary.best_feature}</p>
+                  <p className="text-xs text-emerald-600 mt-1">{summary.best_feature_rate.toFixed(1)}% approval rate</p>
+                </div>
+              )}
+              {summary.worst_feature && (
+                <div className="border border-red-100 bg-red-50/30 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <XCircle size={16} className="text-red-600" />
+                    <span className="text-sm font-medium text-red-800">Needs Improvement</span>
+                  </div>
+                  <p className="text-lg font-bold text-red-700 capitalize">{summary.worst_feature}</p>
+                  <p className="text-xs text-red-600 mt-1">{summary.worst_feature_rate.toFixed(1)}% approval rate</p>
+                </div>
               )}
             </div>
           </div>
@@ -422,12 +407,12 @@ function KnowledgeTab() {
     setLoading(true);
     const h = await authHeaders();
     const params = filter !== "all" ? `?category=${filter}` : "";
-    const res = await fetch(`${API_URL}/api/knowledge${params}`, {
+    const res = await fetch(`${API_URL}/api/knowledge/items${params}`, {
       headers: h,
     }).catch(() => null);
     if (res?.ok) {
       const data = await res.json();
-      setEntries(data.entries || []);
+      setEntries(Array.isArray(data) ? data : []);
     }
     setLoading(false);
   };
@@ -440,13 +425,14 @@ function KnowledgeTab() {
     if (!newTitle.trim() || !newContent.trim()) return;
     setSaving(true);
     const h = await authHeaders();
-    const res = await fetch(`${API_URL}/api/knowledge`, {
+    const res = await fetch(`${API_URL}/api/knowledge/items`, {
       method: "POST",
       headers: h,
       body: JSON.stringify({
         title: newTitle,
         content: newContent,
         category: newCategory,
+        source_type: "manual",
         tags: newTags
           .split(",")
           .map((t) => t.trim())
@@ -465,7 +451,7 @@ function KnowledgeTab() {
 
   const handleDelete = async (id: string) => {
     const h = await authHeaders();
-    await fetch(`${API_URL}/api/knowledge/${id}`, {
+    await fetch(`${API_URL}/api/knowledge/items/${id}`, {
       method: "DELETE",
       headers: h,
     }).catch(() => null);
@@ -663,7 +649,7 @@ function PromptsTab() {
     }).catch(() => null);
     if (res?.ok) {
       const data = await res.json();
-      setConfigs(data.configs || []);
+      setConfigs(Array.isArray(data) ? data : []);
     }
     setLoading(false);
   };
@@ -740,8 +726,8 @@ function PromptsTab() {
                       {cfg.config_key.replace(/_/g, " ")}
                     </p>
                     <p className="text-[10px] text-gray-400">
-                      {cfg.learned_from} · Confidence:{" "}
-                      {cfg.confidence_score.toFixed(0)}%
+                      {cfg.learned_from || "manual"}
+                      {cfg.confidence_score != null && ` · Confidence: ${cfg.confidence_score.toFixed(0)}%`}
                     </p>
                   </div>
                 </div>
@@ -770,21 +756,22 @@ function PromptsTab() {
                       {cfg.description}
                     </p>
                   )}
-                  {/* Confidence bar */}
-                  <div className="mt-3">
-                    <div className="flex justify-between text-[10px] text-gray-400 mb-1">
-                      <span>Confidence</span>
-                      <span>{cfg.confidence_score.toFixed(0)}%</span>
+                  {cfg.confidence_score != null && (
+                    <div className="mt-3">
+                      <div className="flex justify-between text-[10px] text-gray-400 mb-1">
+                        <span>Confidence</span>
+                        <span>{cfg.confidence_score.toFixed(0)}%</span>
+                      </div>
+                      <div className="w-full bg-gray-100 rounded-full h-1.5">
+                        <div
+                          className="h-1.5 rounded-full bg-purple-500"
+                          style={{
+                            width: `${Math.min(cfg.confidence_score, 100)}%`,
+                          }}
+                        />
+                      </div>
                     </div>
-                    <div className="w-full bg-gray-100 rounded-full h-1.5">
-                      <div
-                        className="h-1.5 rounded-full bg-purple-500"
-                        style={{
-                          width: `${Math.min(cfg.confidence_score, 100)}%`,
-                        }}
-                      />
-                    </div>
-                  </div>
+                  )}
                 </div>
               )}
             </div>
@@ -799,7 +786,7 @@ function PromptsTab() {
    ACCURACY TAB
    ═══════════════════════════════════════════════════════════ */
 function AccuracyTab() {
-  const [metrics, setMetrics] = useState<AccuracyMetric[]>([]);
+  const [metrics, setMetrics] = useState<TrendPoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [computing, setComputing] = useState(false);
   const [selectedFeature, setSelectedFeature] = useState("all");
@@ -808,12 +795,12 @@ function AccuracyTab() {
     setLoading(true);
     const h = await authHeaders();
     const res = await fetch(
-      `${API_URL}/api/accuracy/trends?feature=${selectedFeature}&periods=12`,
+      `${API_URL}/api/accuracy/trends?feature=${selectedFeature}&last_n_periods=12`,
       { headers: h }
     ).catch(() => null);
     if (res?.ok) {
       const data = await res.json();
-      setMetrics(data.trends || []);
+      setMetrics(Array.isArray(data.trends) ? data.trends : []);
     }
     setLoading(false);
   };
@@ -825,7 +812,7 @@ function AccuracyTab() {
   const handleCompute = async () => {
     setComputing(true);
     const h = await authHeaders();
-    await fetch(`${API_URL}/api/accuracy/compute`, {
+    await fetch(`${API_URL}/api/accuracy/compute-all?weeks_back=12`, {
       method: "POST",
       headers: h,
     }).catch(() => null);
@@ -896,23 +883,11 @@ function AccuracyTab() {
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">
                     Period
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">
-                    Feature
-                  </th>
                   <th className="px-4 py-3 text-center text-xs font-medium text-gray-500">
                     Total
                   </th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-emerald-600">
-                    Approved
-                  </th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-yellow-600">
-                    Edited
-                  </th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-red-600">
-                    Rejected
-                  </th>
                   <th className="px-4 py-3 text-center text-xs font-medium text-gray-500">
-                    Rate
+                    Approval Rate
                   </th>
                   <th className="px-4 py-3 text-center text-xs font-medium text-gray-500">
                     Trend
@@ -923,22 +898,10 @@ function AccuracyTab() {
                 {metrics.map((m, i) => (
                   <tr key={i} className="hover:bg-gray-50">
                     <td className="px-4 py-3 text-xs text-gray-600">
-                      {fmtDate(m.period_start)}
-                    </td>
-                    <td className="px-4 py-3 text-xs text-gray-800 capitalize font-medium">
-                      {m.feature}
+                      {fmtDate(m.period)}
                     </td>
                     <td className="px-4 py-3 text-center text-xs text-gray-600">
-                      {m.total_interactions}
-                    </td>
-                    <td className="px-4 py-3 text-center text-xs text-emerald-600">
-                      {m.approved_count}
-                    </td>
-                    <td className="px-4 py-3 text-center text-xs text-yellow-600">
-                      {m.needs_edit_count}
-                    </td>
-                    <td className="px-4 py-3 text-center text-xs text-red-600">
-                      {m.rejected_count}
+                      {m.total}
                     </td>
                     <td className="px-4 py-3 text-center">
                       <span
@@ -954,7 +917,7 @@ function AccuracyTab() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <TrendBadge value={m.improvement_vs_previous} />
+                      <TrendBadge value={m.improvement} />
                     </td>
                   </tr>
                 ))}

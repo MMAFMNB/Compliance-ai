@@ -126,13 +126,13 @@ def add_knowledge_item(
     try:
         supabase_admin.table("learning_events").insert({
             "firm_id": firm_id,
-            "user_id": user["id"],
             "event_type": "kb_added",
-            "metadata": {
+            "details": {
                 "kb_item_id": item["id"],
                 "category": body.category,
                 "source_type": body.source_type,
             },
+            "triggered_by": user.get("id", "system"),
         }).execute()
     except Exception as e:
         logger.warning("Failed to log learning_event for kb_added: %s", e)
@@ -429,12 +429,12 @@ Return ONLY the JSON array, no additional text."""
     try:
         supabase_admin.table("learning_events").insert({
             "firm_id": firm_id,
-            "user_id": user["id"],
             "event_type": "kb_extracted",
-            "metadata": {
+            "details": {
                 "feedback_count": len(feedback_items),
                 "extracted_count": len(saved_items),
             },
+            "triggered_by": user.get("id", "system"),
         }).execute()
     except Exception as e:
         logger.warning("Failed to log learning_event for kb_extracted: %s", e)

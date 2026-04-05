@@ -27,7 +27,9 @@ interface Deadline {
   notes: string | null;
   status: string;
   cma_reference: string | null;
-  created_at: string;
+  frequency: string | null;
+  is_recurring: boolean;
+  completed_at: string | null;
 }
 
 interface Stats {

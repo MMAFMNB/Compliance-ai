@@ -100,7 +100,7 @@ def list_feedback(
         query = query.eq("rating", rating)
 
     result = query.execute()
-    return result.data
+    return result.data or []
 
 
 @router.get("/summary")

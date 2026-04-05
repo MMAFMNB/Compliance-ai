@@ -22,7 +22,7 @@ test.describe("DocGen Page (authenticated)", () => {
     ).toBeVisible({ timeout: 10_000 });
 
     await expect(
-      page.locator("text=تقرير الامتثال").first()
+      page.locator("text=تقرير الالتزام السنوي").first()
     ).toBeVisible({ timeout: 10_000 });
   });
 

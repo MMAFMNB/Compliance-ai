@@ -149,7 +149,7 @@
         "dependencies": [
           "12"
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -158,7 +158,8 @@
             "dependencies": [],
             "details": "Inspect the chat page component, check for missing imports, verify API endpoint configurations, test responsive design, and ensure WebSocket connection initializes properly for streaming",
             "status": "pending",
-            "testStrategy": "Manual testing with browser dev tools, check console logs, test on multiple browsers, verify mobile responsiveness"
+            "testStrategy": "Manual testing with browser dev tools, check console logs, test on multiple browsers, verify mobile responsiveness",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -169,7 +170,8 @@
             ],
             "details": "Test conversation creation endpoint, verify database insertion into conversations table, check firm_id association, validate response format, ensure proper error handling for invalid requests",
             "status": "pending",
-            "testStrategy": "Use Postman/curl to test API, verify database records with SQL queries, test with invalid payloads for error handling"
+            "testStrategy": "Use Postman/curl to test API, verify database records with SQL queries, test with invalid payloads for error handling",
+            "parentId": "undefined"
           },
           {
             "id": 3,
@@ -180,7 +182,8 @@
             ],
             "details": "Debug embeddings similarity search, verify chunks table queries, fix streaming response implementation, ensure proper WebSocket/SSE handling, validate RAG context retrieval accuracy",
             "status": "pending",
-            "testStrategy": "Send test messages about CMA regulations, monitor database queries, verify streaming chunks arrive in order, test concurrent message handling"
+            "testStrategy": "Send test messages about CMA regulations, monitor database queries, verify streaming chunks arrive in order, test concurrent message handling",
+            "parentId": "undefined"
           },
           {
             "id": 4,
@@ -191,7 +194,8 @@
             ],
             "details": "Fix GET /api/chat/conversations endpoint, ensure messages load with conversations, implement proper pagination, fix DELETE endpoint with cascade deletion of messages, verify UI updates after deletion",
             "status": "pending",
-            "testStrategy": "Create multiple conversations with messages, test loading with pagination, verify soft/hard delete behavior, check cascade deletion"
+            "testStrategy": "Create multiple conversations with messages, test loading with pagination, verify soft/hard delete behavior, check cascade deletion",
+            "parentId": "undefined"
           },
           {
             "id": 5,
@@ -202,10 +206,11 @@
             ],
             "details": "Check if chunks table is empty, process existing CMA PDFs to extract text chunks, generate embeddings using configured model, insert chunks with metadata and embeddings into database, verify similarity search works",
             "status": "pending",
-            "testStrategy": "Verify chunk count before/after seeding, test similarity search with CMA-specific queries, validate embedding dimensions match configuration"
+            "testStrategy": "Verify chunk count before/after seeding, test similarity search with CMA-specific queries, validate embedding dimensions match configuration",
+            "parentId": "undefined"
           }
         ],
-        "updatedAt": "2026-04-05T14:34:24.372Z"
+        "updatedAt": "2026-04-05T14:41:26.637Z"
       },
       {
         "id": 14,
@@ -217,7 +222,7 @@
         "dependencies": [
           "12"
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -226,7 +231,8 @@
             "dependencies": [],
             "details": "Test POST /api/documents/upload endpoint with various file sizes and formats. Verify file is saved to storage system and document record is created in documents table with correct metadata. Test error handling for invalid files.",
             "status": "pending",
-            "testStrategy": "Upload test PDFs of different sizes (small, medium, large), verify storage location, check database record creation, test concurrent uploads"
+            "testStrategy": "Upload test PDFs of different sizes (small, medium, large), verify storage location, check database record creation, test concurrent uploads",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -237,7 +243,8 @@
             ],
             "details": "Test POST /api/documents/{id}/review endpoint. Verify AI analysis service is called correctly, review findings are properly formatted and saved to document_reviews table with correct document_id and firm_id associations.",
             "status": "pending",
-            "testStrategy": "Generate reviews for uploaded documents, verify AI analysis runs, check document_reviews table for saved findings, test with different document types"
+            "testStrategy": "Generate reviews for uploaded documents, verify AI analysis runs, check document_reviews table for saved findings, test with different document types",
+            "parentId": "undefined"
           },
           {
             "id": 3,
@@ -248,7 +255,8 @@
             ],
             "details": "Debug and fix the React/Vue component responsible for displaying document reviews. Ensure it properly fetches review data from API, handles loading states, and displays findings in a user-friendly format with proper styling.",
             "status": "pending",
-            "testStrategy": "Test component with various review data structures, verify UI renders correctly, test responsive design, check error states"
+            "testStrategy": "Test component with various review data structures, verify UI renders correctly, test responsive design, check error states",
+            "parentId": "undefined"
           },
           {
             "id": 4,
@@ -259,7 +267,8 @@
             ],
             "details": "Update dashboard query to include document review counts using SELECT COUNT(*) FROM document_reviews WHERE firm_id = ?. Add audit trail entries for review creation, updates, and access. Verify real-time updates.",
             "status": "pending",
-            "testStrategy": "Create reviews and verify dashboard stats update, check audit_trail table for entries, test real-time stat updates"
+            "testStrategy": "Create reviews and verify dashboard stats update, check audit_trail table for entries, test real-time stat updates",
+            "parentId": "undefined"
           },
           {
             "id": 5,
@@ -271,10 +280,11 @@
             ],
             "details": "Add file size limits and validation, implement language detection for non-English PDFs, add error handling for corrupted files. Create user-friendly error messages and fallback behaviors for each scenario.",
             "status": "pending",
-            "testStrategy": "Test with PDFs over size limit, non-English documents, intentionally corrupted files, verify graceful error handling and user feedback"
+            "testStrategy": "Test with PDFs over size limit, non-English documents, intentionally corrupted files, verify graceful error handling and user feedback",
+            "parentId": "undefined"
           }
         ],
-        "updatedAt": "2026-04-05T14:34:33.811Z"
+        "updatedAt": "2026-04-05T14:41:36.241Z"
       },
       {
         "id": 15,
@@ -286,8 +296,65 @@
         "dependencies": [
           "12"
         ],
-        "status": "pending",
-        "subtasks": []
+        "status": "in-progress",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Fix deadline loading API endpoint with category joins",
+            "description": "Implement and fix the GET /api/compliance/deadlines endpoint to properly load deadlines with category information",
+            "dependencies": [],
+            "details": "Update the deadline loading endpoint to include JOIN with deadline_categories table. Ensure proper filtering by firm_id and return deadline data with category names, colors, and icons. Handle pagination and sorting by due_date.",
+            "status": "pending",
+            "testStrategy": "Test with multiple deadlines across different categories. Verify JOIN returns correct category data. Test pagination with large datasets. Ensure firm isolation works correctly."
+          },
+          {
+            "id": 2,
+            "title": "Implement deadline CRUD operations (Create, Update, Delete)",
+            "description": "Build and test POST, PATCH, and DELETE endpoints for deadline management with proper validation",
+            "dependencies": [
+              1
+            ],
+            "details": "Implement POST /api/compliance/deadlines for creating new deadlines with firm_id validation. Add PATCH /api/compliance/deadlines/{id} for status updates including completed_at timestamp. Implement DELETE endpoint with soft delete. Ensure all operations are properly audited.",
+            "status": "pending",
+            "testStrategy": "Test creation with valid and invalid data. Verify PATCH updates completed_at when status changes to 'completed'. Test soft delete preserves data. Verify audit trail captures all operations."
+          },
+          {
+            "id": 3,
+            "title": "Fix calendar UI component to display deadlines by date",
+            "description": "Update the frontend calendar component to properly render deadlines organized by date with interactive features",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "Fix the React/Vue calendar component to fetch deadlines from API and display them in a calendar grid view. Show deadlines on their due dates with category colors. Implement click handlers for viewing/editing deadlines. Add month/week/day view toggles. Ensure responsive design works on mobile.",
+            "status": "pending",
+            "testStrategy": "Test calendar renders deadlines on correct dates. Verify category colors display properly. Test view switching between month/week/day. Test on various screen sizes for responsive behavior."
+          },
+          {
+            "id": 4,
+            "title": "Integrate CMA scraper to auto-create compliance deadlines",
+            "description": "Ensure CMA scraper automatically creates deadline records when new obligations are discovered",
+            "dependencies": [
+              2
+            ],
+            "details": "Modify CMA scraper to create deadline records when obligations are found during scraping. Map obligation types to deadline categories. Set appropriate due dates based on regulatory requirements. Include source reference and metadata from CMA. Ensure no duplicate deadlines are created for same obligations.",
+            "status": "pending",
+            "testStrategy": "Run CMA scraper and verify deadlines are created for found obligations. Test duplicate prevention logic. Verify deadline metadata includes CMA source information. Check category mapping works correctly."
+          },
+          {
+            "id": 5,
+            "title": "Add deadline filtering by category and status",
+            "description": "Implement filtering functionality for deadlines by category, status, and date range in both API and UI",
+            "dependencies": [
+              3,
+              4
+            ],
+            "details": "Add query parameters to GET /api/compliance/deadlines for filtering by category_id, status (pending/completed/overdue), and date range. Update UI to include filter dropdowns/checkboxes. Implement quick filters for 'This Week', 'This Month', 'Overdue'. Ensure filters work together and update calendar view dynamically.",
+            "status": "pending",
+            "testStrategy": "Test API filters return correct subsets of deadlines. Verify multiple filters work in combination. Test UI updates calendar view when filters change. Verify performance with large datasets."
+          }
+        ],
+        "updatedAt": "2026-04-05T14:43:48.052Z"
       },
       {
         "id": 16,
@@ -299,8 +366,63 @@
         "dependencies": [
           "12"
         ],
-        "status": "pending",
-        "subtasks": []
+        "status": "in-progress",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Seed Document Templates Database",
+            "description": "Initialize the document_templates table with default templates including Compliance Report template",
+            "dependencies": [],
+            "details": "Execute SQL script to insert default document templates with proper structure. Include templates for Compliance Report, Risk Assessment, and Audit Report with appropriate fields JSON structure containing field names, types, and validation rules.",
+            "status": "pending",
+            "testStrategy": "Verify templates are correctly inserted by querying document_templates table and checking JSON field structure validity"
+          },
+          {
+            "id": 2,
+            "title": "Implement Template Loading API Endpoint",
+            "description": "Create GET /api/documents/templates endpoint to retrieve available document templates",
+            "dependencies": [
+              1
+            ],
+            "details": "Implement endpoint that fetches all templates from document_templates table, filters by category if provided, and returns template metadata including name, fields, and category. Include proper error handling and pagination support.",
+            "status": "pending",
+            "testStrategy": "Test endpoint with various query parameters, verify response structure matches expected format, test error cases like invalid category"
+          },
+          {
+            "id": 3,
+            "title": "Build Document Generation Engine with Variable Substitution",
+            "description": "Implement POST /api/documents/generate endpoint with template variable replacement logic",
+            "dependencies": [
+              2
+            ],
+            "details": "Create document generation logic that accepts template ID and field values, performs variable substitution using regex or template engine, validates all required fields are provided, and saves generated document to generated_documents table with proper metadata.",
+            "status": "pending",
+            "testStrategy": "Test generation with all field types (text, date, number), verify variable substitution accuracy, test edge cases like missing fields or invalid data types"
+          },
+          {
+            "id": 4,
+            "title": "Implement Document Review Workflow API",
+            "description": "Create POST /api/documents/{id}/submit-review endpoint for document review submission workflow",
+            "dependencies": [
+              3
+            ],
+            "details": "Implement endpoint that updates document status to 'pending_review', creates notification record for reviewers, adds audit trail entry, and handles state transitions. Include validation to ensure document exists and is in valid state for review.",
+            "status": "pending",
+            "testStrategy": "Test workflow state transitions, verify notifications are created correctly, test concurrent review submissions, validate audit trail entries"
+          },
+          {
+            "id": 5,
+            "title": "Fix Frontend Template Selection and Field Mapping UI",
+            "description": "Update React components for template selection, field mapping, and document generation interface",
+            "dependencies": [
+              4
+            ],
+            "details": "Fix template dropdown component to load templates from API, implement dynamic form generation based on template fields JSON, add field validation on frontend, integrate with document generation API, and display generation status with proper error handling.",
+            "status": "pending",
+            "testStrategy": "Test UI with different templates, verify field validation works, test document generation flow end-to-end, verify error messages display correctly"
+          }
+        ],
+        "updatedAt": "2026-04-05T14:44:00.364Z"
       },
       {
         "id": 17,
@@ -329,8 +451,60 @@
           "12",
           "13"
         ],
-        "status": "pending",
-        "subtasks": []
+        "status": "in-progress",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Fix accuracy summary endpoint for dashboard metrics",
+            "description": "Implement the GET /api/learning/accuracy-summary endpoint to aggregate accuracy metrics from the accuracy_metrics table",
+            "dependencies": [],
+            "details": "Create endpoint that queries accuracy_metrics table, aggregates data by feature/category, calculates overall accuracy percentages, and returns summary statistics for the learning dashboard display",
+            "status": "pending",
+            "testStrategy": "Test with various accuracy_metrics entries, verify correct aggregation calculations, test empty database scenario, validate response format matches frontend expectations"
+          },
+          {
+            "id": 2,
+            "title": "Implement accuracy trends calculation with moving averages",
+            "description": "Create GET /api/learning/accuracy-trends endpoint to calculate and return accuracy trends over time with moving averages",
+            "dependencies": [
+              1
+            ],
+            "details": "Query accuracy_metrics grouped by date, implement moving average calculation (7-day and 30-day), handle date range parameters, return trend data suitable for chart visualization",
+            "status": "pending",
+            "testStrategy": "Test with data spanning multiple time periods, verify moving average calculations are correct, test edge cases with sparse data, validate trend direction indicators"
+          },
+          {
+            "id": 3,
+            "title": "Fix knowledge base CRUD operations",
+            "description": "Implement complete CRUD functionality for knowledge base entries including POST, GET, and DELETE endpoints",
+            "dependencies": [],
+            "details": "Create POST /api/learning/knowledge-base for adding entries, GET endpoint for listing/retrieving entries with pagination, DELETE /api/learning/knowledge-base/{id} for removal, ensure proper validation and error handling",
+            "status": "pending",
+            "testStrategy": "Test creating various knowledge base entries, verify retrieval with filters, test deletion and cascade effects, validate input sanitization and authorization"
+          },
+          {
+            "id": 4,
+            "title": "Fix prompt configs display and management",
+            "description": "Implement GET /api/learning/prompt-configs endpoint to retrieve and display prompt configurations",
+            "dependencies": [],
+            "details": "Query prompt configurations from database, format response for frontend display, include metadata like usage counts and effectiveness scores, support filtering by feature or status",
+            "status": "pending",
+            "testStrategy": "Test retrieval of various prompt configs, verify filtering works correctly, test performance with large datasets, validate response structure"
+          },
+          {
+            "id": 5,
+            "title": "Ensure analyze-feedback job runs and updates metrics",
+            "description": "Fix POST /api/learning/analyze-feedback endpoint to process feedback and update accuracy metrics, remove deleted features from filter dropdown",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "Implement feedback processing logic to analyze user feedback, update accuracy_metrics table based on feedback, ensure job scheduling works, clean up deleted features from UI filter options",
+            "status": "pending",
+            "testStrategy": "Submit various types of feedback and verify metrics update correctly, test job scheduling and execution, verify deleted features are removed from dropdowns, test concurrent feedback processing"
+          }
+        ],
+        "updatedAt": "2026-04-05T14:44:14.888Z"
       },
       {
         "id": 19,
@@ -342,7 +516,7 @@
         "dependencies": [
           "12"
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -351,7 +525,8 @@
             "dependencies": [],
             "details": "Implement GET /api/admin/firms to list all firms with pagination and filtering. Create POST /api/admin/firms for adding new firms with validation. Implement PATCH /api/admin/firms/{id} to activate/deactivate firms. Ensure proper authorization checks for super_admin role only.",
             "status": "pending",
-            "testStrategy": "Test with super_admin token, verify unauthorized access returns 403, test pagination with multiple firms, verify firm status changes persist"
+            "testStrategy": "Test with super_admin token, verify unauthorized access returns 403, test pagination with multiple firms, verify firm status changes persist",
+            "parentId": "undefined"
           },
           {
             "id": 2,
@@ -362,7 +537,8 @@
             ],
             "details": "Create GET /api/admin/users endpoint that returns all users for super_admin or firm-scoped users for firm_admin. Implement PATCH /api/admin/users/{id}/role for role updates with validation. Ensure firm_admin can only manage users within their firm. Add proper RLS policies to enforce data isolation.",
             "status": "pending",
-            "testStrategy": "Test with both super_admin and firm_admin tokens, verify firm isolation works correctly, test role changes take immediate effect, verify cross-firm access is blocked"
+            "testStrategy": "Test with both super_admin and firm_admin tokens, verify firm isolation works correctly, test role changes take immediate effect, verify cross-firm access is blocked",
+            "parentId": "undefined"
           },
           {
             "id": 3,
@@ -373,7 +549,8 @@
             ],
             "details": "Implement GET /api/admin/audit-log with proper SQL joins to users and firms tables. Include user names, firm names, and formatted timestamps. Add pagination and filtering by date range, user, firm, and action type. Ensure firm_admin only sees their firm's audit entries.",
             "status": "pending",
-            "testStrategy": "Create test audit entries for multiple firms, verify join data displays correctly, test pagination, verify firm-scoped filtering works for firm_admin"
+            "testStrategy": "Create test audit entries for multiple firms, verify join data displays correctly, test pagination, verify firm-scoped filtering works for firm_admin",
+            "parentId": "undefined"
           },
           {
             "id": 4,
@@ -384,7 +561,8 @@
             ],
             "details": "Implement GET /api/admin/usage endpoint that aggregates data from audit_log, documents, and other tables. Calculate API call counts, storage usage, active users, and feature adoption metrics. Group by firm for super_admin view or show single firm for firm_admin. Include date range filtering.",
             "status": "pending",
-            "testStrategy": "Generate test data for multiple firms, verify aggregation calculations are correct, test date range filtering, ensure firm isolation for firm_admin role"
+            "testStrategy": "Generate test data for multiple firms, verify aggregation calculations are correct, test date range filtering, ensure firm isolation for firm_admin role",
+            "parentId": "undefined"
           },
           {
             "id": 5,
@@ -395,10 +573,11 @@
             ],
             "details": "Review and update RLS policies on users, firms, audit_log, and related tables. Ensure firm_id filtering is applied correctly for firm_admin role. Test that super_admin can access all data while firm_admin is restricted. Add missing policies where needed. Document all RLS rules for future reference.",
             "status": "pending",
-            "testStrategy": "Attempt cross-firm data access with firm_admin token and verify it fails, test all endpoints with different roles, use SQL directly to verify RLS enforcement"
+            "testStrategy": "Attempt cross-firm data access with firm_admin token and verify it fails, test all endpoints with different roles, use SQL directly to verify RLS enforcement",
+            "parentId": "undefined"
           }
         ],
-        "updatedAt": "2026-04-05T14:34:42.098Z"
+        "updatedAt": "2026-04-05T14:41:45.344Z"
       },
       {
         "id": 20,
@@ -412,18 +591,72 @@
           "15"
         ],
         "status": "pending",
-        "subtasks": []
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Fix Manual Scan Trigger API Endpoint",
+            "description": "Implement and fix the POST /api/scraper/scan endpoint to trigger immediate CMA website scraping",
+            "dependencies": [],
+            "details": "Create or fix the API endpoint that allows manual triggering of the CMA scraper. Ensure proper authentication, error handling, and response format. The endpoint should initiate the scraping process asynchronously and return a job ID or status.",
+            "status": "pending",
+            "testStrategy": "Test endpoint with Postman/curl, verify it returns proper status codes, check that scraping job is queued/started, monitor logs for execution"
+          },
+          {
+            "id": 2,
+            "title": "Fix CMA Website Fetching and Compliance",
+            "description": "Ensure scraper properly fetches data from cma.gov.sa with robots.txt compliance and PDF downloads",
+            "dependencies": [
+              1
+            ],
+            "details": "Implement robots.txt checking and compliance, parse circular listings from CMA website HTML, implement PDF download functionality with proper error handling and retry logic. Store downloaded PDFs in appropriate storage location.",
+            "status": "pending",
+            "testStrategy": "Verify robots.txt is checked before scraping, test parsing of circular listings against live CMA site, confirm PDFs are downloaded and stored correctly"
+          },
+          {
+            "id": 3,
+            "title": "Fix Circular PDF Parser and NLP Processing",
+            "description": "Implement PDF text extraction and NLP-based obligation/deadline identification from circular content",
+            "dependencies": [
+              2
+            ],
+            "details": "Use PDF parsing libraries to extract text from downloaded circulars, implement NLP models or rules to identify obligations and deadlines within the text, extract key metadata like circular numbers, dates, and compliance requirements.",
+            "status": "pending",
+            "testStrategy": "Test parser with various circular PDF formats, verify text extraction accuracy, validate NLP identifies obligations and deadlines correctly, test edge cases"
+          },
+          {
+            "id": 4,
+            "title": "Implement Alert Creation from Parsed Circulars",
+            "description": "Ensure parsed circular data is properly inserted into alerts table with all required fields",
+            "dependencies": [
+              3
+            ],
+            "details": "Implement database insertion logic for alerts table including title, description, source_url, and circular_number fields. Handle duplicates, ensure data validation, and implement proper error handling for database operations.",
+            "status": "pending",
+            "testStrategy": "Verify alerts are created in database after parsing, check for duplicate handling, validate all fields are populated correctly, test database constraints"
+          },
+          {
+            "id": 5,
+            "title": "Implement Deadline Synchronization and Scheduler",
+            "description": "Sync obligations to calendar deadlines table and configure automated daily scraping runs",
+            "dependencies": [
+              4
+            ],
+            "details": "Create logic to insert parsed deadlines into deadlines table with proper title, due_date, source, and source_id. Configure cron job or task scheduler for daily automated runs. Ensure proper logging and monitoring of scheduled tasks.",
+            "status": "pending",
+            "testStrategy": "Verify deadlines are created with correct dates from parsed obligations, test scheduler runs at configured times, monitor logs for successful automated executions"
+          }
+        ]
       }
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-04-05T14:34:42.099Z",
+      "lastModified": "2026-04-05T14:44:14.890Z",
       "taskCount": 10,
-      "completedCount": 2,
+      "completedCount": 5,
       "tags": [
         "master"
       ],
-      "created": "2026-04-05T14:34:51.684Z",
+      "created": "2026-04-05T14:44:26.578Z",
       "description": "Tasks for master context"
     }
   }

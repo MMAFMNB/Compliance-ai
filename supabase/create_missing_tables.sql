@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS public.deadlines (
     frequency text DEFAULT 'one_time',
     is_recurring boolean DEFAULT false,
     cma_reference text,
+    created_by uuid REFERENCES auth.users(id),
     created_at timestamptz DEFAULT now()
 );
 
