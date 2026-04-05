@@ -21,6 +21,16 @@ test.describe("Navigation & Routing", () => {
       "/search",
       "/alerts",
       "/calendar",
+      "/checklist",
+      "/self-assessment",
+      "/aml",
+      "/suitability",
+      "/impact-analysis",
+      "/docgen",
+      "/learning",
+      "/regulatory",
+      "/admin",
+      "/firm-admin",
     ];
 
     for (const route of protectedRoutes) {

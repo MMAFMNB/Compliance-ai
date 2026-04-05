@@ -6,22 +6,14 @@ import {
   MessageSquare,
   Plus,
   FileSearch,
-  Search,
-  Bell,
   LayoutDashboard,
   Scale,
   LogOut,
   Trash2,
   Calendar,
-  Zap,
   FilePlus,
-  ClipboardCheck,
-  Activity,
   Shield,
   Building2,
-  BookOpen,
-  AlertOctagon,
-  UserCheck,
   Brain,
 } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
@@ -117,28 +109,10 @@ export default function Sidebar({
           onClick={() => router.push("/review")}
         />
         <NavItem
-          icon={<Search size={16} />}
-          label="البحث في الأنظمة"
-          sublabel="Regulation Search"
-          onClick={() => router.push("/search")}
-        />
-        <NavItem
-          icon={<Bell size={16} />}
-          label="التنبيهات"
-          sublabel="Alerts"
-          onClick={() => router.push("/alerts")}
-        />
-        <NavItem
           icon={<Calendar size={16} />}
           label="المواعيد النظامية"
           sublabel="Compliance Calendar"
           onClick={() => router.push("/calendar")}
-        />
-        <NavItem
-          icon={<Zap size={16} />}
-          label="تحليل الأثر التنظيمي"
-          sublabel="Impact Analysis"
-          onClick={() => router.push("/impact-analysis")}
         />
         <NavItem
           icon={<FilePlus size={16} />}
@@ -147,40 +121,10 @@ export default function Sidebar({
           onClick={() => router.push("/docgen")}
         />
         <NavItem
-          icon={<ClipboardCheck size={16} />}
-          label="قائمة الامتثال"
-          sublabel="Compliance Checklist"
-          onClick={() => router.push("/checklist")}
-        />
-        <NavItem
-          icon={<Activity size={16} />}
-          label="التقييم الذاتي"
-          sublabel="Self-Assessment"
-          onClick={() => router.push("/self-assessment")}
-        />
-        <NavItem
-          icon={<AlertOctagon size={16} />}
-          label="مكافحة غسل الأموال"
-          sublabel="AML Case Manager"
-          onClick={() => router.push("/aml")}
-        />
-        <NavItem
-          icon={<UserCheck size={16} />}
-          label="تقييم الملاءمة"
-          sublabel="Suitability Assessment"
-          onClick={() => router.push("/suitability")}
-        />
-        <NavItem
           icon={<Brain size={16} />}
           label="التعلم التكيفي"
           sublabel="Learning Dashboard"
           onClick={() => router.push("/learning")}
-        />
-        <NavItem
-          icon={<BookOpen size={16} />}
-          label="الاستخبارات التنظيمية"
-          sublabel="Regulatory Intelligence"
-          onClick={() => router.push("/regulatory")}
         />
         <NavItem
           icon={<LayoutDashboard size={16} />}

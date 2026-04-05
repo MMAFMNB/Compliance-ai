@@ -13,24 +13,15 @@ logging.basicConfig(level=logging.INFO)
 from chat import router as chat_router
 from conversations import router as conversations_router
 from auth_routes import router as auth_router
-from search import router as search_router
 from review import router as review_router
-from alerts import router as alerts_router
 from dashboard import router as dashboard_router
 from calendar_routes import router as calendar_router
-from impact_analysis import router as impact_analysis_router
 from docgen import router as docgen_router
-from checklist import router as checklist_router
-from self_assessment import router as self_assessment_router
 from admin_routes import router as admin_router
 from feedback import router as feedback_router
 from adaptive_prompts import router as adaptive_prompts_router
 from knowledge_base import router as knowledge_base_router
 from accuracy_tracking import router as accuracy_router
-from aml_routes import router as aml_router
-from str_generator import router as str_router
-from watchlist_screening import router as screening_router
-from suitability import router as suitability_router
 
 @asynccontextmanager
 async def lifespan(app):
@@ -104,10 +95,8 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 # Runs after the response so it never blocks the request.
 
 TRACKED_PREFIXES = (
-    "/api/chat", "/api/review", "/api/search", "/api/documents",
-    "/api/checklist", "/api/assessment", "/api/impact-analysis",
-    "/api/calendar", "/api/aml", "/api/str", "/api/screening",
-    "/api/suitability", "/api/knowledge", "/api/prompts", "/api/accuracy",
+    "/api/chat", "/api/review", "/api/documents",
+    "/api/calendar", "/api/knowledge", "/api/prompts", "/api/accuracy",
 )
 
 @app.middleware("http")
@@ -138,24 +127,15 @@ async def usage_tracking_middleware(request: Request, call_next):
 app.include_router(auth_router)
 app.include_router(chat_router)
 app.include_router(conversations_router)
-app.include_router(search_router)
 app.include_router(review_router)
-app.include_router(alerts_router)
 app.include_router(dashboard_router)
 app.include_router(calendar_router)
-app.include_router(impact_analysis_router)
 app.include_router(docgen_router)
-app.include_router(checklist_router)
-app.include_router(self_assessment_router)
 app.include_router(admin_router)
 app.include_router(feedback_router)
 app.include_router(adaptive_prompts_router)
 app.include_router(knowledge_base_router)
 app.include_router(accuracy_router)
-app.include_router(aml_router)
-app.include_router(str_router)
-app.include_router(screening_router)
-app.include_router(suitability_router)
 
 
 
