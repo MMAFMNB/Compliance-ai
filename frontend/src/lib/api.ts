@@ -90,6 +90,7 @@ export async function streamMessage(
 
   const decoder = new TextDecoder();
   let buffer = "";
+  let doneReceived = false;
 
   while (true) {
     const { done, value } = await reader.read();
@@ -108,8 +109,10 @@ export async function streamMessage(
           } else if (data.type === "conversation_id") {
             onConversationId(data.conversation_id);
           } else if (data.type === "done") {
+            doneReceived = true;
             onDone();
           } else if (data.type === "error") {
+            doneReceived = true;
             onError(data.error);
           }
         } catch {
@@ -125,11 +128,24 @@ export async function streamMessage(
       const data = JSON.parse(buffer.trim().slice(6));
       if (data.type === "text") onText(data.text);
       else if (data.type === "conversation_id") onConversationId(data.conversation_id);
-      else if (data.type === "done") onDone();
-      else if (data.type === "error") onError(data.error);
+      else if (data.type === "done") {
+        doneReceived = true;
+        onDone();
+      } else if (data.type === "error") {
+        doneReceived = true;
+        onError(data.error);
+      }
     } catch {
       // Skip malformed remaining buffer
     }
+  }
+
+  // Safety net: if the stream ended without a "done" or "error" event
+  // (e.g. connection dropped or backend crashed mid-stream), call onDone
+  // so the UI commits whatever streaming content was received and resets
+  // the loading state instead of spinning forever.
+  if (!doneReceived) {
+    onDone();
   }
 }
 

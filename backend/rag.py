@@ -172,17 +172,32 @@ def build_rag_prompt(
     rag_context: str,
     conversation_messages: list[dict],
     user_query: str,
+    source_type: str | None = None,
 ) -> tuple[str, list[dict]]:
     """Build the full prompt with RAG context injected.
+
+    Args:
+        source_type: When "tam_policies", uses P&P-specific context header.
+                     Otherwise defaults to regulatory context header.
 
     Returns (system_prompt_with_context, messages).
     """
     if rag_context:
+        if source_type == "tam_policies":
+            context_header = (
+                "## Retrieved Policy & Procedure Context\n\n"
+                "The following sections from the company's internal policies and procedures documents have been retrieved as relevant to the user's query. "
+                "Use these as your PRIMARY source for answering. Cite the specific document, section, and policy for every claim."
+            )
+        else:
+            context_header = (
+                "## Retrieved Regulatory Context\n\n"
+                "The following sections from CMA regulations and AML/CTF regulations have been retrieved as relevant to the user's query. "
+                "Use these as your PRIMARY source for answering. Cite the specific regulation, article, and section for every claim."
+            )
         augmented_system = (
             f"{system_prompt}\n\n"
-            "## Retrieved Regulatory Context\n\n"
-            "The following sections from CMA regulations and AML/CTF regulations have been retrieved as relevant to the user's query. "
-            "Use these as your PRIMARY source for answering. Cite the specific regulation, article, and section for every claim.\n\n"
+            f"{context_header}\n\n"
             f"{rag_context}"
         )
     else:

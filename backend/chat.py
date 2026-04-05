@@ -66,7 +66,10 @@ def _get_rag_system_prompt(user_message: str, mode: str | None = None) -> str:
             return base_prompt
 
         rag_context = build_rag_context(chunks)
-        augmented_prompt, _ = build_rag_prompt(base_prompt, rag_context, [], user_message)
+        augmented_prompt, _ = build_rag_prompt(
+            base_prompt, rag_context, [], user_message,
+            source_type=source_filter,
+        )
         return augmented_prompt
     except Exception:
         logger.exception("RAG pipeline failed, falling back to base system prompt")
