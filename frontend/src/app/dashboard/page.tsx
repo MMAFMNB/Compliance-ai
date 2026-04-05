@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   LayoutDashboard,
@@ -72,11 +72,18 @@ export default function DashboardPage() {
   const [sources, setSources] = useState<Source[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [scanning, setScanning] = useState(false);
-  const [scanResult, setScanResult] = useState<{ total_saved: number; news_found: number; circulars_found: number; regulations_found: number } | null>(null);
   const [ingestingAml, setIngestingAml] = useState(false);
-  const [amlIngestResult, setAmlIngestResult] = useState<{ documents_ingested: number; chunks_created: number; errors: string[] } | null>(null);
   const [scanningAml, setScanningAml] = useState(false);
-  const [amlScanResult, setAmlScanResult] = useState<{ new_publications: number; high_risk_countries_updated: number } | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "warning"; visible: boolean }>({ message: "", type: "success", visible: false });
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const showToast = useCallback((message: string, type: "success" | "warning") => {
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    setToast({ message, type, visible: true });
+    toastTimer.current = setTimeout(() => {
+      setToast((prev) => ({ ...prev, visible: false }));
+    }, 5000);
+  }, []);
 
   useEffect(() => {
     if (user) fetchData();
@@ -111,7 +118,6 @@ export default function DashboardPage() {
 
   const handleScanCMA = async () => {
     setScanning(true);
-    setScanResult(null);
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const res = await fetch(`${API_URL}/api/dashboard/scan-cma`, {
@@ -120,8 +126,12 @@ export default function DashboardPage() {
       });
       if (res.ok) {
         const data = await res.json();
-        setScanResult(data);
-        // Refresh dashboard stats after scan
+        const now = new Date().toLocaleString("ar-SA", { dateStyle: "medium", timeStyle: "short" });
+        if (data.total_saved > 0) {
+          showToast(`⚠ ${data.total_saved} تحديث جديد من هيئة السوق المالية — ${data.total_saved} new CMA updates found`, "warning");
+        } else {
+          showToast(`✓ لا توجد تحديثات جديدة — No new CMA updates as of ${now}`, "success");
+        }
         fetchData();
       }
     } catch (err) {
@@ -133,7 +143,6 @@ export default function DashboardPage() {
 
   const handleIngestAml = async () => {
     setIngestingAml(true);
-    setAmlIngestResult(null);
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const res = await fetch(`${API_URL}/api/dashboard/ingest-aml`, {
@@ -142,7 +151,11 @@ export default function DashboardPage() {
       });
       if (res.ok) {
         const data = await res.json();
-        setAmlIngestResult(data);
+        if (data.documents_ingested > 0) {
+          showToast(`✓ تم استيعاب ${data.documents_ingested} وثيقة — ${data.documents_ingested} documents ingested, ${data.chunks_created} chunks created`, "success");
+        } else {
+          showToast("✓ جميع الوثائق مستوعبة — All documents already ingested", "success");
+        }
         fetchData();
       }
     } catch (err) {
@@ -154,7 +167,6 @@ export default function DashboardPage() {
 
   const handleScanAml = async () => {
     setScanningAml(true);
-    setAmlScanResult(null);
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const res = await fetch(`${API_URL}/api/dashboard/scan-aml`, {
@@ -163,7 +175,13 @@ export default function DashboardPage() {
       });
       if (res.ok) {
         const data = await res.json();
-        setAmlScanResult(data);
+        const now = new Date().toLocaleString("ar-SA", { dateStyle: "medium", timeStyle: "short" });
+        const total = (data.new_publications || 0) + (data.high_risk_countries_updated || 0);
+        if (total > 0) {
+          showToast(`⚠ ${total} تحديث جديد من مكافحة غسل الأموال`, "warning");
+        } else {
+          showToast(`✓ لا توجد تحديثات جديدة — No new AML updates as of ${now}`, "success");
+        }
         fetchData();
       }
     } catch (err) {
@@ -241,63 +259,6 @@ export default function DashboardPage() {
                 <RefreshCw size={16} className={scanningAml ? "animate-spin" : ""} />
                 {scanningAml ? "جارٍ الفحص..." : "فحص تحديثات مكافحة غسل الأموال"}
               </button>
-              {scanResult && (
-                <div className="flex items-center gap-2 text-xs bg-white border border-slate-200 rounded-lg px-3 py-2">
-                  {scanResult.total_saved > 0 ? (
-                    <>
-                      <AlertTriangle size={14} className="text-amber-500" />
-                      <span className="text-slate-700">
-                        {scanResult.total_saved} تحديث جديد
-                        <span className="text-slate-400 mr-2">
-                          ({scanResult.news_found} أخبار، {scanResult.circulars_found} تعاميم، {scanResult.regulations_found} أنظمة)
-                        </span>
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle size={14} className="text-emerald-500" />
-                      <span className="text-slate-600">لا توجد تحديثات جديدة</span>
-                    </>
-                  )}
-                </div>
-              )}
-              {amlIngestResult && (
-                <div className="flex items-center gap-2 text-xs bg-white border border-emerald-200 rounded-lg px-3 py-2">
-                  {amlIngestResult.documents_ingested > 0 ? (
-                    <>
-                      <AlertTriangle size={14} className="text-emerald-500" />
-                      <span className="text-slate-700">
-                        {amlIngestResult.documents_ingested} وثيقة، {amlIngestResult.chunks_created} جزء مفهرس
-                        {amlIngestResult.errors.length > 0 && (
-                          <span className="text-red-500 mr-2">({amlIngestResult.errors.length} أخطاء)</span>
-                        )}
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle size={14} className="text-emerald-500" />
-                      <span className="text-slate-600">لا توجد وثائق جديدة</span>
-                    </>
-                  )}
-                </div>
-              )}
-              {amlScanResult && (
-                <div className="flex items-center gap-2 text-xs bg-white border border-emerald-200 rounded-lg px-3 py-2">
-                  {amlScanResult.new_publications > 0 || amlScanResult.high_risk_countries_updated > 0 ? (
-                    <>
-                      <AlertTriangle size={14} className="text-emerald-500" />
-                      <span className="text-slate-700">
-                        {amlScanResult.new_publications} منشور جديد، {amlScanResult.high_risk_countries_updated} تحديث دول عالية المخاطر
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle size={14} className="text-emerald-500" />
-                      <span className="text-slate-600">لا توجد تحديثات جديدة</span>
-                    </>
-                  )}
-                </div>
-              )}
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
@@ -443,6 +404,32 @@ export default function DashboardPage() {
           </>
         )}
       </div>
+
+      {/* Toast Notification */}
+      {toast.message && (
+        <div
+          className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-xl shadow-lg border max-w-md ${
+            toast.type === "success"
+              ? "bg-white border-emerald-200"
+              : "bg-white border-amber-200"
+          }`}
+          style={{
+            transition: "opacity 0.3s ease, transform 0.3s ease",
+            opacity: toast.visible ? 1 : 0,
+            transform: toast.visible ? "translateY(0)" : "translateY(16px)",
+            pointerEvents: toast.visible ? "auto" : "none",
+          }}
+          role="status"
+          aria-live="polite"
+        >
+          {toast.type === "success" ? (
+            <CheckCircle size={18} className="text-emerald-500 flex-shrink-0" />
+          ) : (
+            <AlertTriangle size={18} className="text-amber-500 flex-shrink-0" />
+          )}
+          <p dir="auto" className="text-sm text-slate-700 leading-relaxed">{toast.message}</p>
+        </div>
+      )}
     </div>
   );
 }

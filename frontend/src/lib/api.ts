@@ -54,16 +54,20 @@ export async function streamMessage(
   onText: (text: string) => void,
   onConversationId: (id: string) => void,
   onDone: () => void,
-  onError: (error: string) => void
+  onError: (error: string) => void,
+  mode?: string
 ): Promise<void> {
   const headers = await getAuthHeaders();
+  const body: Record<string, unknown> = {
+    message,
+    conversation_id: conversationId,
+  };
+  if (mode) body.mode = mode;
+
   const res = await fetch(`${API_URL}/api/chat/stream`, {
     method: "POST",
     headers,
-    body: JSON.stringify({
-      message,
-      conversation_id: conversationId,
-    }),
+    body: JSON.stringify(body),
   });
 
   if (!res.ok) {
@@ -170,6 +174,60 @@ export async function getConversation(
 export async function deleteConversation(id: string): Promise<void> {
   const headers = await getAuthHeaders();
   const res = await fetch(`${API_URL}/api/conversations/${id}`, {
+    method: "DELETE",
+    headers,
+  });
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+}
+
+// ─── Policies & Procedures ──────────────────────────────────
+
+export interface PolicyDocument {
+  id: string;
+  title: string;
+  doc_type: string;
+  language: string | null;
+  created_at: string | null;
+  chunk_count: number;
+}
+
+export async function uploadPolicyDocument(file: File): Promise<PolicyDocument> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.access_token) throw new Error("Not authenticated");
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const res = await fetch(`${API_URL}/api/policies/upload`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${session.access_token}`,
+    },
+    body: formData,
+  });
+
+  if (!res.ok) {
+    let detail = `Upload failed: ${res.status}`;
+    try {
+      const body = await res.json();
+      if (body.detail) detail = body.detail;
+    } catch {}
+    throw new Error(detail);
+  }
+
+  return res.json();
+}
+
+export async function getPolicyDocuments(): Promise<PolicyDocument[]> {
+  const headers = await getAuthHeaders();
+  const res = await fetch(`${API_URL}/api/policies/documents`, { headers });
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+}
+
+export async function deletePolicyDocument(id: string): Promise<void> {
+  const headers = await getAuthHeaders();
+  const res = await fetch(`${API_URL}/api/policies/documents/${id}`, {
     method: "DELETE",
     headers,
   });

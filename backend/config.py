@@ -23,6 +23,7 @@ FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
 # System prompt — loaded from file at startup
 SYSTEM_PROMPT_PATH = os.path.join(os.path.dirname(__file__), "system_prompt.txt")
+PP_SYSTEM_PROMPT_PATH = os.path.join(os.path.dirname(__file__), "pp_system_prompt.txt")
 
 
 # ─── CMA.gov.sa Document Sources ────────────────────────────
@@ -44,4 +45,9 @@ AML_GUIDANCE_PAGE = f"{AML_BASE_URL}/ar-sa/GuidanceReports/Pages/default.aspx"
 
 def load_system_prompt() -> str:
     with open(SYSTEM_PROMPT_PATH, "r", encoding="utf-8") as f:
+        return f.read()
+
+
+def load_pp_system_prompt() -> str:
+    with open(PP_SYSTEM_PROMPT_PATH, "r", encoding="utf-8") as f:
         return f.read()

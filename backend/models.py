@@ -67,6 +67,7 @@ class ChatRequest(BaseModel):
     message: str
     conversation_id: Optional[str] = None
     language: Optional[Language] = None
+    mode: Optional[str] = None  # e.g. "policies" for P&P agent
 
 
 class ChatResponse(BaseModel):

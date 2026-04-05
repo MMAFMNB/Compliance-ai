@@ -6,6 +6,7 @@ import {
   MessageSquare,
   Plus,
   FileSearch,
+  FileText,
   LayoutDashboard,
   Scale,
   LogOut,
@@ -149,6 +150,12 @@ export default function Sidebar({
           sublabel="Regulatory Chat"
           active
           onClick={() => router.push("/")}
+        />
+        <NavItem
+          icon={<FileText size={16} />}
+          label="السياسات والإجراءات"
+          sublabel="P&P Agent"
+          onClick={() => router.push("/policies")}
         />
         <NavItem
           icon={<FileSearch size={16} />}

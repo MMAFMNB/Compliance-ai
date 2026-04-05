@@ -22,6 +22,7 @@ from feedback import router as feedback_router
 from adaptive_prompts import router as adaptive_prompts_router
 from knowledge_base import router as knowledge_base_router
 from accuracy_tracking import router as accuracy_router
+from policies import router as policies_router
 
 @asynccontextmanager
 async def lifespan(app):
@@ -97,6 +98,7 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 TRACKED_PREFIXES = (
     "/api/chat", "/api/review", "/api/documents",
     "/api/calendar", "/api/knowledge", "/api/prompts", "/api/accuracy",
+    "/api/policies",
 )
 
 @app.middleware("http")
@@ -136,6 +138,7 @@ app.include_router(feedback_router)
 app.include_router(adaptive_prompts_router)
 app.include_router(knowledge_base_router)
 app.include_router(accuracy_router)
+app.include_router(policies_router)
 
 
 

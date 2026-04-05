@@ -9,7 +9,7 @@ from fastapi.responses import StreamingResponse
 
 from auth import get_current_user
 from api_utils import call_anthropic, client
-from config import ANTHROPIC_API_KEY, MODEL, load_system_prompt
+from config import ANTHROPIC_API_KEY, MODEL, load_system_prompt, load_pp_system_prompt
 from database import supabase_admin
 from models import ChatRequest, ChatResponse
 
@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api", tags=["chat"])
 SYSTEM_PROMPT = load_system_prompt()
+PP_SYSTEM_PROMPT = load_pp_system_prompt()
 
 MAX_CONTEXT_MESSAGES = 20
 
@@ -40,27 +41,36 @@ def _is_rag_available() -> bool:
     return has_chunks
 
 
-def _get_rag_system_prompt(user_message: str) -> str:
-    """Build system prompt with RAG context if available."""
+def _get_rag_system_prompt(user_message: str, mode: str | None = None) -> str:
+    """Build system prompt with RAG context if available.
+
+    When mode == "policies", uses the P&P system prompt and filters
+    RAG results to only tam_policies documents.
+    """
     import os
+
+    is_policies = mode == "policies"
+    base_prompt = PP_SYSTEM_PROMPT if is_policies else SYSTEM_PROMPT
+    source_filter = "tam_policies" if is_policies else None
+
     if os.getenv("RAG_ENABLED", "false").lower() != "true":
-        return SYSTEM_PROMPT
+        return base_prompt
 
     if not _is_rag_available():
-        return SYSTEM_PROMPT
+        return base_prompt
 
     try:
         from rag import rag_query, build_rag_context, build_rag_prompt
-        chunks = rag_query(user_message)
+        chunks = rag_query(user_message, source_filter=source_filter)
         if not chunks:
-            return SYSTEM_PROMPT
+            return base_prompt
 
         rag_context = build_rag_context(chunks)
-        augmented_prompt, _ = build_rag_prompt(SYSTEM_PROMPT, rag_context, [], user_message)
+        augmented_prompt, _ = build_rag_prompt(base_prompt, rag_context, [], user_message)
         return augmented_prompt
     except Exception:
         logger.exception("RAG pipeline failed, falling back to base system prompt")
-        return SYSTEM_PROMPT
+        return base_prompt
 
 
 def _get_conversation_messages(conversation_id: str) -> list[dict]:
@@ -117,7 +127,7 @@ def chat(request: ChatRequest, user: dict = Depends(get_current_user)):
     _save_message(conv_id, "user", request.message)
     messages = _get_conversation_messages(conv_id)
 
-    system_prompt = _get_rag_system_prompt(request.message)
+    system_prompt = _get_rag_system_prompt(request.message, mode=request.mode)
 
     start = time.perf_counter()
     try:
@@ -148,7 +158,7 @@ def chat_stream(request: ChatRequest, user: dict = Depends(get_current_user)):
     _save_message(conv_id, "user", request.message)
     messages = _get_conversation_messages(conv_id)
 
-    system_prompt = _get_rag_system_prompt(request.message)
+    system_prompt = _get_rag_system_prompt(request.message, mode=request.mode)
 
     def generate():
         full_response = ""

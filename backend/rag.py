@@ -20,20 +20,36 @@ def vector_search(
     top_k: int = TOP_K_VECTOR,
     doc_type: str | None = None,
     language: str | None = None,
+    source_filter: str | None = None,
 ) -> list[dict]:
     """Search chunks by cosine similarity using pgvector.
 
     Uses a Supabase RPC function for the vector similarity query.
+    When source_filter is provided, results are post-filtered to only
+    include chunks from documents with the matching source.
     """
     params = {
         "query_embedding": query_embedding,
-        "match_count": top_k,
+        "match_count": top_k if not source_filter else top_k * 2,
         "filter_doc_type": doc_type,
         "filter_language": language,
     }
 
     result = supabase_admin.rpc("match_chunks", params).execute()
-    return result.data or []
+    chunks = result.data or []
+
+    if source_filter and chunks:
+        # Get document IDs that match the source filter
+        doc_ids_result = (
+            supabase_admin.table("documents")
+            .select("id")
+            .eq("source", source_filter)
+            .execute()
+        )
+        allowed_doc_ids = {r["id"] for r in (doc_ids_result.data or [])}
+        chunks = [c for c in chunks if c.get("document_id") in allowed_doc_ids][:top_k]
+
+    return chunks
 
 
 def keyword_search(query: str, top_k: int = 10) -> list[dict]:
@@ -180,10 +196,12 @@ def build_rag_prompt(
 
 # ─── Full RAG Query ─────────────────────────────────────────
 
-def rag_query(query: str, doc_type: str | None = None) -> list[dict]:
+def rag_query(query: str, doc_type: str | None = None, source_filter: str | None = None) -> list[dict]:
     """Execute the full RAG retrieval pipeline for a query.
 
     Returns the top-k reranked chunks with relevance scores.
+    When source_filter is provided, only chunks from documents with
+    the matching source value are returned.
     """
     query_language = detect_language(query)
     query_embedding = embed_query(query)
@@ -193,6 +211,7 @@ def rag_query(query: str, doc_type: str | None = None) -> list[dict]:
         query_embedding,
         top_k=TOP_K_VECTOR,
         doc_type=doc_type,
+        source_filter=source_filter,
     )
     keyword_results = keyword_search(query)
 
