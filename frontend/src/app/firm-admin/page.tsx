@@ -270,7 +270,7 @@ export default function FirmAdminPage() {
                   >
                     <div>
                       <p className="text-sm font-semibold text-slate-800">
-                        {u.name || u.email}
+                        {u.full_name || u.email}
                       </p>
                       <p className="text-xs text-slate-400">{u.email}</p>
                     </div>

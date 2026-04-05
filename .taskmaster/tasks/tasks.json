@@ -2,14 +2,14 @@
   "master": {
     "tasks": [
       {
-        "id": "11",
+        "id": 11,
         "title": "Clean Up Orphaned References and Dead Code",
         "description": "Remove all references to deleted features from codebase including backend modules, frontend components, and test files",
         "details": "1. Update backend/feedback.py and backend/accuracy_tracking.py:\n```python\n# Remove from VALID_FEATURES list:\n# 'regulation_search', 'alerts', 'impact_analysis', 'compliance_checklist',\n# 'self_assessment', 'aml_case_manager', 'suitability_assessment', 'regulatory_intelligence'\n```\n2. Update frontend/src/app/learning/page.tsx feature filter to remove deleted features\n3. Fix dashboard.py comment referencing AuditEntry type\n4. Delete orphaned test files:\n   - backend/tests/test_alerts.py\n   - backend/tests/test_search.py\n   - e2e tests: alerts.spec.ts, search.spec.ts\n5. Update backend/tests/conftest.py to remove deleted feature fixtures\n6. Clean backend/load-tests/ files removing deleted endpoint references",
         "testStrategy": "Run grep searches for deleted feature names across codebase to ensure complete removal. Verify all imports resolve correctly. Run linter to catch any broken references.",
         "priority": "high",
         "dependencies": [],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -64,17 +64,17 @@
             "parentId": "undefined"
           }
         ],
-        "updatedAt": "2026-04-05T14:26:36.936Z"
+        "updatedAt": "2026-04-05T14:33:30.201Z"
       },
       {
-        "id": "12",
+        "id": 12,
         "title": "Audit and Verify Database Schema",
         "description": "Validate all required tables exist in live Supabase instance and document current state",
         "details": "1. Connect to live Supabase instance and run schema inspection:\n```sql\nSELECT table_name FROM information_schema.tables \nWHERE table_schema = 'public' ORDER BY table_name;\n```\n2. Compare against expected 28 tables from migrations\n3. For each table, check row counts:\n```sql\nSELECT 'table_name' as table, COUNT(*) as row_count FROM table_name;\n```\n4. Verify RLS policies exist:\n```sql\nSELECT tablename, policyname FROM pg_policies WHERE schemaname = 'public';\n```\n5. Document findings in a database_audit.md file\n6. Run any missing migrations using Supabase CLI if needed",
         "testStrategy": "Create automated script to verify schema matches expected structure. Test RLS policies by attempting cross-firm data access. Verify foreign key constraints are enforced.",
         "priority": "high",
         "dependencies": [],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -137,10 +137,10 @@
             "parentId": "undefined"
           }
         ],
-        "updatedAt": "2026-04-05T14:26:46.773Z"
+        "updatedAt": "2026-04-05T14:33:42.595Z"
       },
       {
-        "id": "13",
+        "id": 13,
         "title": "Fix Regulatory Chat Feature End-to-End",
         "description": "Ensure chat feature works completely from UI through RAG retrieval to response streaming",
         "details": "1. Verify frontend chat page loads without errors\n2. Test conversation creation API:\n```python\n# POST /api/chat/conversations\n# Verify conversation saved to conversations table\n```\n3. Test message sending with streaming:\n```python\n# POST /api/chat/messages\n# Verify RAG retrieval from chunks table\n# Verify embeddings similarity search works\n# Verify streaming response returns\n```\n4. Fix any issues with conversation history loading\n5. Test conversation deletion\n6. Seed chunks table with CMA regulatory content if empty:\n```python\n# Use existing CMA PDFs to populate chunks and embeddings\n```",
@@ -149,11 +149,66 @@
         "dependencies": [
           "12"
         ],
-        "status": "pending",
-        "subtasks": []
+        "status": "in-progress",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Verify Frontend Chat Page and Fix Loading Errors",
+            "description": "Ensure the chat page loads without errors, check console for JavaScript errors, and verify all UI components render correctly",
+            "dependencies": [],
+            "details": "Inspect the chat page component, check for missing imports, verify API endpoint configurations, test responsive design, and ensure WebSocket connection initializes properly for streaming",
+            "status": "pending",
+            "testStrategy": "Manual testing with browser dev tools, check console logs, test on multiple browsers, verify mobile responsiveness"
+          },
+          {
+            "id": 2,
+            "title": "Test and Fix Conversation Creation API",
+            "description": "Verify POST /api/chat/conversations endpoint creates conversations and saves to database correctly",
+            "dependencies": [
+              1
+            ],
+            "details": "Test conversation creation endpoint, verify database insertion into conversations table, check firm_id association, validate response format, ensure proper error handling for invalid requests",
+            "status": "pending",
+            "testStrategy": "Use Postman/curl to test API, verify database records with SQL queries, test with invalid payloads for error handling"
+          },
+          {
+            "id": 3,
+            "title": "Fix Message Sending with RAG Retrieval and Streaming",
+            "description": "Ensure POST /api/chat/messages performs RAG retrieval from chunks table and returns streaming responses",
+            "dependencies": [
+              2
+            ],
+            "details": "Debug embeddings similarity search, verify chunks table queries, fix streaming response implementation, ensure proper WebSocket/SSE handling, validate RAG context retrieval accuracy",
+            "status": "pending",
+            "testStrategy": "Send test messages about CMA regulations, monitor database queries, verify streaming chunks arrive in order, test concurrent message handling"
+          },
+          {
+            "id": 4,
+            "title": "Fix Conversation History Loading and Deletion",
+            "description": "Ensure conversation history loads correctly from database and deletion functionality works properly",
+            "dependencies": [
+              3
+            ],
+            "details": "Fix GET /api/chat/conversations endpoint, ensure messages load with conversations, implement proper pagination, fix DELETE endpoint with cascade deletion of messages, verify UI updates after deletion",
+            "status": "pending",
+            "testStrategy": "Create multiple conversations with messages, test loading with pagination, verify soft/hard delete behavior, check cascade deletion"
+          },
+          {
+            "id": 5,
+            "title": "Seed Chunks Table with CMA Regulatory Content",
+            "description": "Populate chunks and embeddings tables with CMA regulatory content from existing PDFs if tables are empty",
+            "dependencies": [
+              3
+            ],
+            "details": "Check if chunks table is empty, process existing CMA PDFs to extract text chunks, generate embeddings using configured model, insert chunks with metadata and embeddings into database, verify similarity search works",
+            "status": "pending",
+            "testStrategy": "Verify chunk count before/after seeding, test similarity search with CMA-specific queries, validate embedding dimensions match configuration"
+          }
+        ],
+        "updatedAt": "2026-04-05T14:34:24.372Z"
       },
       {
-        "id": "14",
+        "id": 14,
         "title": "Fix Document Review Feature End-to-End",
         "description": "Ensure PDF upload, review processing, and results display work completely",
         "details": "1. Test PDF upload endpoint:\n```python\n# POST /api/documents/upload\n# Verify file saved to storage\n# Verify document record created\n```\n2. Test review generation:\n```python\n# POST /api/documents/{id}/review\n# Verify AI analysis runs\n# Verify findings saved to document_reviews table\n```\n3. Fix frontend review display component\n4. Ensure reviews appear in dashboard stats:\n```sql\nSELECT COUNT(*) FROM document_reviews WHERE firm_id = ?\n```\n5. Add review to audit trail entries\n6. Handle edge cases: large PDFs, non-English content, corrupted files",
@@ -162,11 +217,67 @@
         "dependencies": [
           "12"
         ],
-        "status": "pending",
-        "subtasks": []
+        "status": "in-progress",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Test and Fix PDF Upload Endpoint",
+            "description": "Verify PDF upload endpoint works correctly, files are saved to storage, and document records are created in database",
+            "dependencies": [],
+            "details": "Test POST /api/documents/upload endpoint with various file sizes and formats. Verify file is saved to storage system and document record is created in documents table with correct metadata. Test error handling for invalid files.",
+            "status": "pending",
+            "testStrategy": "Upload test PDFs of different sizes (small, medium, large), verify storage location, check database record creation, test concurrent uploads"
+          },
+          {
+            "id": 2,
+            "title": "Fix Review Generation and AI Processing",
+            "description": "Ensure document review generation endpoint triggers AI analysis and saves findings to document_reviews table",
+            "dependencies": [
+              1
+            ],
+            "details": "Test POST /api/documents/{id}/review endpoint. Verify AI analysis service is called correctly, review findings are properly formatted and saved to document_reviews table with correct document_id and firm_id associations.",
+            "status": "pending",
+            "testStrategy": "Generate reviews for uploaded documents, verify AI analysis runs, check document_reviews table for saved findings, test with different document types"
+          },
+          {
+            "id": 3,
+            "title": "Fix Frontend Review Display Component",
+            "description": "Repair the frontend component that displays document reviews to ensure findings are shown correctly",
+            "dependencies": [
+              2
+            ],
+            "details": "Debug and fix the React/Vue component responsible for displaying document reviews. Ensure it properly fetches review data from API, handles loading states, and displays findings in a user-friendly format with proper styling.",
+            "status": "pending",
+            "testStrategy": "Test component with various review data structures, verify UI renders correctly, test responsive design, check error states"
+          },
+          {
+            "id": 4,
+            "title": "Integrate Reviews into Dashboard Stats and Audit Trail",
+            "description": "Ensure document reviews appear in dashboard statistics and are logged in audit trail",
+            "dependencies": [
+              2
+            ],
+            "details": "Update dashboard query to include document review counts using SELECT COUNT(*) FROM document_reviews WHERE firm_id = ?. Add audit trail entries for review creation, updates, and access. Verify real-time updates.",
+            "status": "pending",
+            "testStrategy": "Create reviews and verify dashboard stats update, check audit_trail table for entries, test real-time stat updates"
+          },
+          {
+            "id": 5,
+            "title": "Handle Edge Cases and Error Scenarios",
+            "description": "Implement robust error handling for edge cases including large PDFs, non-English content, and corrupted files",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "Add file size limits and validation, implement language detection for non-English PDFs, add error handling for corrupted files. Create user-friendly error messages and fallback behaviors for each scenario.",
+            "status": "pending",
+            "testStrategy": "Test with PDFs over size limit, non-English documents, intentionally corrupted files, verify graceful error handling and user feedback"
+          }
+        ],
+        "updatedAt": "2026-04-05T14:34:33.811Z"
       },
       {
-        "id": "15",
+        "id": 15,
         "title": "Fix Compliance Calendar Feature End-to-End",
         "description": "Ensure calendar displays deadlines, allows CRUD operations, and integrates with CMA scraper",
         "details": "1. Fix deadline loading:\n```python\n# GET /api/compliance/deadlines\n# JOIN with deadline_categories table\n```\n2. Test deadline creation:\n```python\n# POST /api/compliance/deadlines\n# Verify saved with correct firm_id\n```\n3. Test status updates:\n```python\n# PATCH /api/compliance/deadlines/{id}\n# Update completed_at timestamp\n```\n4. Fix calendar UI component to display deadlines by date\n5. Ensure CMA scraper creates deadlines:\n```python\n# When obligations found, create corresponding deadlines\n```\n6. Add filtering by category and status",
@@ -179,7 +290,7 @@
         "subtasks": []
       },
       {
-        "id": "16",
+        "id": 16,
         "title": "Fix Document Generator Feature End-to-End",
         "description": "Ensure template-based document generation works with variable substitution and review workflow",
         "details": "1. Seed document templates if empty:\n```sql\nINSERT INTO document_templates (name, content, fields, category)\nVALUES ('Compliance Report', '{content}', '{\"fields\": [...]}', 'reports');\n```\n2. Fix template loading endpoint:\n```python\n# GET /api/documents/templates\n```\n3. Test document generation:\n```python\n# POST /api/documents/generate\n# Replace template variables\n# Save to generated_documents table\n```\n4. Implement submit-for-review workflow:\n```python\n# POST /api/documents/{id}/submit-review\n# Update status, create notification\n```\n5. Fix frontend template selection and field mapping UI",
@@ -192,7 +303,7 @@
         "subtasks": []
       },
       {
-        "id": "17",
+        "id": 17,
         "title": "Fix Dashboard Data Integrity and Expandable Cards",
         "description": "Ensure all dashboard stats show accurate counts and expand to show real detail items",
         "details": "1. Fix stat calculation queries:\n```python\n# GET /api/dashboard/stats\nstats = {\n    'conversations': db.query('SELECT COUNT(*) FROM conversations WHERE firm_id = ?'),\n    'documents': db.query('SELECT COUNT(*) FROM document_reviews WHERE firm_id = ?'),\n    'deadlines': db.query('SELECT COUNT(*) FROM deadlines WHERE firm_id = ? AND completed_at IS NULL'),\n    'alerts': db.query('SELECT COUNT(*) FROM alerts WHERE created_at > NOW() - INTERVAL 30 days')\n}\n```\n2. Implement detail endpoints for each stat:\n```python\n# GET /api/dashboard/conversations/recent\n# GET /api/dashboard/documents/recent\n# GET /api/dashboard/deadlines/upcoming\n# GET /api/dashboard/alerts/recent\n```\n3. Fix frontend expandable card components to fetch and display details\n4. Implement CMA scan button handler\n5. Fix audit trail to show real activities",
@@ -208,7 +319,7 @@
         "subtasks": []
       },
       {
-        "id": "18",
+        "id": 18,
         "title": "Fix Learning Dashboard and Analytics",
         "description": "Ensure learning dashboard displays real accuracy metrics and knowledge base management works",
         "details": "1. Fix accuracy summary endpoint:\n```python\n# GET /api/learning/accuracy-summary\n# Aggregate from accuracy_metrics table\n```\n2. Implement accuracy trends calculation:\n```python\n# GET /api/learning/accuracy-trends\n# Group by date, calculate moving averages\n```\n3. Fix knowledge base CRUD:\n```python\n# POST /api/learning/knowledge-base\n# GET /api/learning/knowledge-base\n# DELETE /api/learning/knowledge-base/{id}\n```\n4. Fix prompt configs display:\n```python\n# GET /api/learning/prompt-configs\n```\n5. Ensure analyze-feedback job runs:\n```python\n# POST /api/learning/analyze-feedback\n# Process feedback, update metrics\n```\n6. Remove deleted features from filter dropdown",
@@ -222,7 +333,7 @@
         "subtasks": []
       },
       {
-        "id": "19",
+        "id": 19,
         "title": "Fix Admin Panel and Multi-Tenant Management",
         "description": "Ensure super admin can manage firms/users and firm admins can manage their users",
         "details": "1. Fix firm management for super_admin:\n```python\n# GET /api/admin/firms\n# POST /api/admin/firms\n# PATCH /api/admin/firms/{id} (activate/deactivate)\n```\n2. Fix user management:\n```python\n# GET /api/admin/users\n# PATCH /api/admin/users/{id}/role\n```\n3. Fix audit log display:\n```python\n# GET /api/admin/audit-log\n# JOIN with users and firms tables\n```\n4. Implement usage summary:\n```python\n# GET /api/admin/usage\n# Aggregate API calls, storage, etc.\n```\n5. Fix firm-scoped user management for firm_admin role\n6. Ensure RLS policies enforce firm isolation",
@@ -231,11 +342,66 @@
         "dependencies": [
           "12"
         ],
-        "status": "pending",
-        "subtasks": []
+        "status": "in-progress",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Implement Super Admin Firm Management Endpoints",
+            "description": "Create and fix API endpoints for super admin to manage firms including listing, creating, and activating/deactivating firms",
+            "dependencies": [],
+            "details": "Implement GET /api/admin/firms to list all firms with pagination and filtering. Create POST /api/admin/firms for adding new firms with validation. Implement PATCH /api/admin/firms/{id} to activate/deactivate firms. Ensure proper authorization checks for super_admin role only.",
+            "status": "pending",
+            "testStrategy": "Test with super_admin token, verify unauthorized access returns 403, test pagination with multiple firms, verify firm status changes persist"
+          },
+          {
+            "id": 2,
+            "title": "Fix User Management and Role Assignment APIs",
+            "description": "Implement user listing and role management endpoints with proper firm scoping for both super admin and firm admin roles",
+            "dependencies": [
+              1
+            ],
+            "details": "Create GET /api/admin/users endpoint that returns all users for super_admin or firm-scoped users for firm_admin. Implement PATCH /api/admin/users/{id}/role for role updates with validation. Ensure firm_admin can only manage users within their firm. Add proper RLS policies to enforce data isolation.",
+            "status": "pending",
+            "testStrategy": "Test with both super_admin and firm_admin tokens, verify firm isolation works correctly, test role changes take immediate effect, verify cross-firm access is blocked"
+          },
+          {
+            "id": 3,
+            "title": "Implement Audit Log Display with User/Firm Joins",
+            "description": "Create audit log endpoint that properly joins with users and firms tables to show meaningful activity history",
+            "dependencies": [
+              2
+            ],
+            "details": "Implement GET /api/admin/audit-log with proper SQL joins to users and firms tables. Include user names, firm names, and formatted timestamps. Add pagination and filtering by date range, user, firm, and action type. Ensure firm_admin only sees their firm's audit entries.",
+            "status": "pending",
+            "testStrategy": "Create test audit entries for multiple firms, verify join data displays correctly, test pagination, verify firm-scoped filtering works for firm_admin"
+          },
+          {
+            "id": 4,
+            "title": "Create Usage Summary and Analytics Endpoint",
+            "description": "Build usage tracking endpoint that aggregates API calls, storage usage, and other metrics by firm",
+            "dependencies": [
+              3
+            ],
+            "details": "Implement GET /api/admin/usage endpoint that aggregates data from audit_log, documents, and other tables. Calculate API call counts, storage usage, active users, and feature adoption metrics. Group by firm for super_admin view or show single firm for firm_admin. Include date range filtering.",
+            "status": "pending",
+            "testStrategy": "Generate test data for multiple firms, verify aggregation calculations are correct, test date range filtering, ensure firm isolation for firm_admin role"
+          },
+          {
+            "id": 5,
+            "title": "Verify and Fix RLS Policies for Multi-Tenant Isolation",
+            "description": "Ensure all Row Level Security policies properly enforce firm isolation across all admin panel features",
+            "dependencies": [
+              4
+            ],
+            "details": "Review and update RLS policies on users, firms, audit_log, and related tables. Ensure firm_id filtering is applied correctly for firm_admin role. Test that super_admin can access all data while firm_admin is restricted. Add missing policies where needed. Document all RLS rules for future reference.",
+            "status": "pending",
+            "testStrategy": "Attempt cross-firm data access with firm_admin token and verify it fails, test all endpoints with different roles, use SQL directly to verify RLS enforcement"
+          }
+        ],
+        "updatedAt": "2026-04-05T14:34:42.098Z"
       },
       {
-        "id": "20",
+        "id": 20,
         "title": "Fix CMA Scraper Pipeline End-to-End",
         "description": "Ensure CMA scraper fetches updates, parses circulars, and creates alerts/deadlines",
         "details": "1. Fix manual scan trigger:\n```python\n# POST /api/scraper/scan\n# Trigger immediate CMA website scrape\n```\n2. Verify scraper fetches from cma.gov.sa:\n```python\n# Check robots.txt compliance\n# Parse circular listings\n# Download new PDFs\n```\n3. Fix circular parser:\n```python\n# Extract obligations from PDF text\n# Use NLP to identify deadlines\n```\n4. Ensure alerts are created:\n```sql\nINSERT INTO alerts (title, description, source_url, circular_number)\n```\n5. Sync obligations to calendar:\n```sql\nINSERT INTO deadlines (title, due_date, source, source_id)\n```\n6. Fix scheduler for daily runs:\n```python\n# Configure cron job or scheduler\n```",
@@ -251,12 +417,14 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-04-05T14:26:46.775Z",
+      "lastModified": "2026-04-05T14:34:42.099Z",
       "taskCount": 10,
-      "completedCount": 0,
+      "completedCount": 2,
       "tags": [
         "master"
-      ]
+      ],
+      "created": "2026-04-05T14:34:51.684Z",
+      "description": "Tasks for master context"
     }
   }
 }

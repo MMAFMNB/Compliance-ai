@@ -197,6 +197,9 @@ def review_document(
                 "filename": file.filename,
                 "language": language,
                 "total_findings": len(findings),
+                "compliant": compliant_count,
+                "non_compliant": non_compliant_count,
+                "needs_review": needs_review_count,
                 "findings": findings_data,
                 "latency_ms": latency_ms,
             }).execute()

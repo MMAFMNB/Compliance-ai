@@ -90,11 +90,10 @@ export async function activateFirm(firmId: string): Promise<void> {
 export interface AdminUser {
   id: string;
   email: string;
-  name: string;
-  organization: string;
+  full_name: string;
   role: string;
   firm_id: string | null;
-  language_pref: string;
+  language_preference: string;
   created_at: string | null;
 }
 

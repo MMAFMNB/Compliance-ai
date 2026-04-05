@@ -93,11 +93,10 @@ class FirmOut(BaseModel):
 class UserOut(BaseModel):
     id: str
     email: str
-    name: str
-    organization: str
+    full_name: str = ""
     role: str
     firm_id: Optional[str] = None
-    language_pref: str
+    language_preference: str = "ar"
     created_at: Optional[str] = None
 
 

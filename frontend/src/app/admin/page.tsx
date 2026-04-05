@@ -317,7 +317,7 @@ export default function SuperAdminPage() {
                   className="bg-white border border-slate-200 rounded-xl p-5 flex items-center justify-between"
                 >
                   <div>
-                    <p className="text-sm font-semibold text-slate-800">{u.name || u.email}</p>
+                    <p className="text-sm font-semibold text-slate-800">{u.full_name || u.email}</p>
                     <p className="text-xs text-slate-400">{u.email}</p>
                   </div>
                   <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${roleCfg.color}`}>

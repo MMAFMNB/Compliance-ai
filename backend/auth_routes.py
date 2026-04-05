@@ -139,11 +139,11 @@ def get_profile(user: dict = Depends(get_current_user)):
     return UserProfile(
         id=user["id"],
         email=user["email"],
-        name=user.get("name", ""),
+        name=user.get("full_name", user.get("name", "")),
         organization=user.get("organization", ""),
         role=user.get("role", "compliance_officer"),
         firm_id=user.get("firm_id"),
-        language_pref=user.get("language_pref", "ar"),
+        language_pref=user.get("language_preference", user.get("language_pref", "ar")),
     )
 
 
@@ -157,9 +157,17 @@ def update_profile(
     if not updates:
         raise HTTPException(status_code=400, detail="No fields to update")
 
-    # Convert enum to string for database
+    # Map API field names to database column names
+    db_updates: dict = {}
+    if "name" in updates:
+        db_updates["full_name"] = updates["name"]
+    if "organization" in updates:
+        db_updates["organization"] = updates["organization"]
     if "language_pref" in updates:
-        updates["language_pref"] = updates["language_pref"].value
+        db_updates["language_preference"] = updates["language_pref"].value if hasattr(updates["language_pref"], "value") else updates["language_pref"]
 
-    supabase_admin.table("users").update(updates).eq("id", user["id"]).execute()
+    if not db_updates:
+        raise HTTPException(status_code=400, detail="No fields to update")
+
+    supabase_admin.table("users").update(db_updates).eq("id", user["id"]).execute()
     return {"status": "updated"}
