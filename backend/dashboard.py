@@ -185,3 +185,121 @@ def get_audit_trail(
     entries = entries[offset : offset + limit]
 
     return AuditResponse(entries=entries, total=total)
+
+
+@router.get("/stat-detail")
+def get_stat_detail(
+    type: str = Query(..., description="One of: conversations, messages, documents, reviews, alerts, chunks"),
+    limit: int = Query(10, ge=1, le=50),
+    user: dict = Depends(get_current_user),
+):
+    """Return recent items for a given stat card."""
+    user_id = user["id"]
+    items: list[dict] = []
+
+    if type == "conversations":
+        rows = (
+            supabase_admin.table("conversations")
+            .select("id, created_at, messages(content, role)")
+            .eq("user_id", user_id)
+            .order("created_at", desc=True)
+            .limit(limit)
+            .execute()
+        )
+        for r in rows.data:
+            msgs = r.get("messages", [])
+            preview = msgs[0]["content"][:100] if msgs else "..."
+            items.append({"id": r["id"], "title": preview, "date": r["created_at"]})
+
+    elif type == "messages":
+        conv_ids_res = (
+            supabase_admin.table("conversations")
+            .select("id")
+            .eq("user_id", user_id)
+            .execute()
+        )
+        conv_ids = [c["id"] for c in conv_ids_res.data]
+        if conv_ids:
+            rows = (
+                supabase_admin.table("messages")
+                .select("id, content, role, created_at, conversation_id")
+                .in_("conversation_id", conv_ids)
+                .order("created_at", desc=True)
+                .limit(limit)
+                .execute()
+            )
+            for r in rows.data:
+                items.append({
+                    "id": r["id"],
+                    "title": f"[{r['role']}] {r['content'][:100]}",
+                    "date": r["created_at"],
+                })
+
+    elif type == "documents":
+        rows = (
+            supabase_admin.table("documents")
+            .select("id, title, doc_type, created_at")
+            .order("created_at", desc=True)
+            .limit(limit)
+            .execute()
+        )
+        for r in rows.data:
+            items.append({
+                "id": r["id"],
+                "title": r.get("title") or r.get("doc_type", "Document"),
+                "subtitle": r.get("doc_type", ""),
+                "date": r["created_at"],
+            })
+
+    elif type == "reviews":
+        rows = (
+            supabase_admin.table("document_reviews")
+            .select("id, filename, total_findings, non_compliant, created_at")
+            .eq("user_id", user_id)
+            .order("created_at", desc=True)
+            .limit(limit)
+            .execute()
+        )
+        for r in rows.data:
+            items.append({
+                "id": r["id"],
+                "title": r["filename"],
+                "subtitle": f"{r['total_findings']} findings \u2022 {r['non_compliant']} non-compliant",
+                "date": r["created_at"],
+            })
+
+    elif type == "alerts":
+        rows = (
+            supabase_admin.table("alerts")
+            .select("id, title, severity, created_at")
+            .order("created_at", desc=True)
+            .limit(limit)
+            .execute()
+        )
+        for r in rows.data:
+            items.append({
+                "id": r["id"],
+                "title": r.get("title", "Alert"),
+                "subtitle": r.get("severity", ""),
+                "date": r["created_at"],
+            })
+
+    elif type == "chunks":
+        rows = (
+            supabase_admin.table("chunks")
+            .select("id, document_id, content, created_at")
+            .order("created_at", desc=True)
+            .limit(limit)
+            .execute()
+        )
+        for r in rows.data:
+            items.append({
+                "id": r["id"],
+                "title": r["content"][:100] if r.get("content") else "Chunk",
+                "date": r["created_at"],
+            })
+
+    else:
+        return {"items": [], "error": "Unknown stat type"}
+
+    return {"items": items}

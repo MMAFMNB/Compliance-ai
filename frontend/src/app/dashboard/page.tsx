@@ -13,6 +13,8 @@ import {
   Bell,
   FileSearch,
   Clock,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { useRequireAuth } from "@/lib/useRequireAuth";
 import { supabase } from "@/lib/supabase";
@@ -35,6 +37,13 @@ interface AuditEntry {
   type: string;
   summary: string;
   created_at: string;
+}
+
+interface DetailItem {
+  id: string;
+  title: string;
+  subtitle?: string;
+  date: string;
 }
 
 export default function DashboardPage() {
@@ -114,12 +123,12 @@ export default function DashboardPage() {
         {!isLoading && stats && (
           <>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
-              <StatCard icon={<MessageSquare size={16} />} label="المحادثات" value={stats.total_conversations} color="text-tam-light" />
-              <StatCard icon={<MessageSquare size={16} />} label="الرسائل" value={stats.total_messages} color="text-tam-accent" />
-              <StatCard icon={<Database size={16} />} label="المستندات" value={stats.total_documents} color="text-emerald-600" />
-              <StatCard icon={<FileSearch size={16} />} label="المراجعات" value={stats.total_reviews} color="text-amber-600" />
-              <StatCard icon={<Bell size={16} />} label="التنبيهات" value={stats.total_alerts} sublabel={stats.unread_alerts > 0 ? `${stats.unread_alerts} جديدة` : undefined} color="text-red-500" />
-              <StatCard icon={<FileText size={16} />} label="الأجزاء المفهرسة" value={stats.total_chunks} color="text-slate-500" />
+              <StatCard icon={<MessageSquare size={16} />} label="المحادثات" value={stats.total_conversations} color="text-tam-light" statType="conversations" />
+              <StatCard icon={<MessageSquare size={16} />} label="الرسائل" value={stats.total_messages} color="text-tam-accent" statType="messages" />
+              <StatCard icon={<Database size={16} />} label="المستندات" value={stats.total_documents} color="text-emerald-600" statType="documents" />
+              <StatCard icon={<FileSearch size={16} />} label="المراجعات" value={stats.total_reviews} color="text-amber-600" statType="reviews" />
+              <StatCard icon={<Bell size={16} />} label="التنبيهات" value={stats.total_alerts} sublabel={stats.unread_alerts > 0 ? `${stats.unread_alerts} جديدة` : undefined} color="text-red-500" statType="alerts" />
+              <StatCard icon={<FileText size={16} />} label="الأجزاء المفهرسة" value={stats.total_chunks} color="text-slate-500" statType="chunks" />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -174,13 +183,79 @@ export default function DashboardPage() {
   );
 }
 
-function StatCard({ icon, label, value, sublabel, color }: { icon: React.ReactNode; label: string; value: number; sublabel?: string; color: string }) {
+function StatCard({ icon, label, value, sublabel, color, statType }: { icon: React.ReactNode; label: string; value: number; sublabel?: string; color: string; statType: string }) {
+  const [expanded, setExpanded] = useState(false);
+  const [items, setItems] = useState<DetailItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [fetched, setFetched] = useState(false);
+
+  const toggle = async () => {
+    if (value === 0) return;
+    const next = !expanded;
+    setExpanded(next);
+
+    if (next && !fetched) {
+      setLoading(true);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const res = await fetch(`${API_URL}/api/dashboard/stat-detail?type=${statType}&limit=5`, {
+          headers: { Authorization: `Bearer ${session?.access_token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setItems(data.items || []);
+        }
+      } catch {
+        // silently fail
+      } finally {
+        setLoading(false);
+        setFetched(true);
+      }
+    }
+  };
+
   return (
-    <div className="bg-white border border-slate-200 rounded-xl p-4">
-      <div className={`${color} mb-2`}>{icon}</div>
-      <p className="text-2xl font-bold text-slate-800">{value}</p>
-      <p className="text-[10px] text-slate-500">{label}</p>
-      {sublabel && <p className="text-[10px] text-red-500 mt-0.5">{sublabel}</p>}
+    <div
+      className={`bg-white border border-slate-200 rounded-xl p-4 transition-all ${value > 0 ? "cursor-pointer hover:border-slate-300 hover:shadow-sm" : ""} ${expanded ? "col-span-2 sm:col-span-3" : ""}`}
+      onClick={toggle}
+    >
+      <div className="flex items-start justify-between">
+        <div>
+          <div className={`${color} mb-2`}>{icon}</div>
+          <p className="text-2xl font-bold text-slate-800">{value}</p>
+          <p className="text-[10px] text-slate-500">{label}</p>
+          {sublabel && <p className="text-[10px] text-red-500 mt-0.5">{sublabel}</p>}
+        </div>
+        {value > 0 && (
+          <div className="text-slate-300 mt-1">
+            {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+          </div>
+        )}
+      </div>
+
+      {expanded && (
+        <div className="mt-3 pt-3 border-t border-slate-100">
+          {loading ? (
+            <Loader2 size={14} className="animate-spin text-slate-400 mx-auto" />
+          ) : items.length === 0 ? (
+            <p className="text-[10px] text-slate-400">لا توجد بيانات</p>
+          ) : (
+            <div className="space-y-2">
+              {items.map((item) => (
+                <div key={item.id} className="text-xs bg-slate-50 rounded-lg px-3 py-2">
+                  <p dir="auto" className="text-slate-700 truncate leading-5">{item.title}</p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    {item.subtitle && <span className="text-[10px] text-slate-400">{item.subtitle}</span>}
+                    <span className="text-[10px] text-slate-400">
+                      {new Date(item.date).toLocaleString("ar-SA", { dateStyle: "short", timeStyle: "short" })}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
